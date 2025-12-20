@@ -8,6 +8,8 @@ import HomeWalkel from "./pages/waliKelas/HOME-WALKEL";
 import TransaksiWalkel from "./pages/waliKelas/TRANSAKSI-WALKEL"
 import HomeWalmur from "./pages/WaliMurid/HOME-WALMUR";
 import TransaksiWalmur from "./pages/WaliMurid/TRANSAKSI-WALMUR"
+import SettingWalkel from "./pages/waliKelas/SETTING-WALKEL"
+import AkunKepsek  from"./pages/KepSek/AKUN-KEPSEK"
 
 
 
@@ -44,6 +46,14 @@ const router = createBrowserRouter([
   {
     path: "/transaksiWalkel",
     element: <TransaksiWalkel />,
+  },
+  {
+    path: "/settingWalkel",
+    element: <SettingWalkel />,
+  },
+  {
+    path: "/akunKepsek",
+    element: <AkunKepsek />,
   },
   
   {
