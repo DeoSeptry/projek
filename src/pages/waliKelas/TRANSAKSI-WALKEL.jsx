@@ -4,8 +4,12 @@ import Navbar from '../../components/NAVBAR'
 import Arus from '../../components/ARUS-KEUANGAN'
 import Riwatar from '../../components/RIWAYAT-TRANSAKSI'
 import { Search, ChevronDown } from 'lucide-react';
+import WithdrawalModal from '../../components/ModalTambahTransaksi'
+
 
 export default function TRANSAKSI_WALKEL() {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [date, setDate] = useState("");
   const dateInputRef = useRef(null);
   const download =
@@ -34,7 +38,12 @@ export default function TRANSAKSI_WALKEL() {
             <h1 className='text-[16px] text-[#343C6A] font-semibold'>Transaksi Terbaru</h1>
             <p className='text-[16px] text-[#718EBF] max-md:hidden'>Riwayat Transaksi Terbaru Anda</p>
           </div>
-          <button className='rounded-2xl text-[16px] bg-[#1814F3] text-white py-2 px-4 hover:shadow-2xl'>+ Tambah Transaksi</button>
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className='rounded-2xl text-[16px] bg-[#1814F3] text-white py-2 px-6 font-medium hover:bg-blue-800'
+          >
+            + Tambah Transaksi
+          </button>
         </div>
         <div className="flex flex-row justify-between items-center gap-4 px-6 pt-4">
       <div className="relative w-full md:w-72">
@@ -88,6 +97,8 @@ export default function TRANSAKSI_WALKEL() {
         </div>
 
       </div>
+            <WithdrawalModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+
     </div>
   )
 }
