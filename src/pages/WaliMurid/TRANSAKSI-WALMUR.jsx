@@ -18,7 +18,7 @@ export default function TRANSAKSI_WALMUR() {
       </div>
       <div className='flex justify-between px-6 max-md:flex-col max-md:gap-2'>
           <div className='flex flex-col gap-1 '>
-            <h1 className='text-[16px] text-[#343C6A] font-semibold'>Transaksi</h1>
+            <h1 className='text-[16px] text-[#343C6A] font-semibold'>avv</h1>
             <p className='text-[16px] text-[#718EBF] max-md:hidden'>Panta transaksi tabungan dan tarik uang tabunganmu disini</p>
           </div>
           <button className='rounded-2xl text-[16px] bg-[#1814F3] text-white py-2 px-6 font-medium'>Tarik Tunai</button>
