@@ -1,14 +1,11 @@
 import React from 'react'
-import Sidebar from '../../components/SIDEBAR';
 import ArusKeuangan from '../../components/ARUS-KEUANGAN';
-import Transksi from '../../components/RIWAYAT-TRANSAKSI';
 import Chart from '../../components/CHART-AKTIVITAS';
-import Navbar from '../../components/NAVBAR';
 import Profile from '../../assets/icons/icon-profile.png'
 
 export default function HOMEKEPSEK() {
 
-  const DataKelas =[
+  const DataKelas = [
     {id:1, nama: "Kelas 1", jumlah :20},
     {id:2, nama: "Kelas 2", jumlah :20},
     {id:3, nama: "Kelas 3", jumlah :20},
@@ -18,47 +15,42 @@ export default function HOMEKEPSEK() {
   ];
 
   return (
-    <div className='bg-[#F5F7FA]'>
-
-      <Sidebar />
-      <div className='flex flex-col md:ml-64 transition-all duration-300'>
-        <Navbar/>
-        <h1 className='text-[22px] text-[#343C6A] font-medium pl-6 pt-3'>Arus Keuangan</h1>
+    <div className='bg-[#F5F7FA] min-h-screen p-6'>
+      <h1 className='text-[22px] text-[#343C6A] font-medium mb-4'>Arus Keuangan</h1>
+      
       <div>
-              
-
         <ArusKeuangan />
       </div>
 
       <div>
-<Chart/>
+        <Chart/>
       </div>
-      <div className=' '>
-        <h1 className='text-[22px] text-[#343C6A] font-medium pl-6 pt-3'>Jumlah Siswa Siswi</h1>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 p-6">
-      {DataKelas.map((item) => (
-        <div 
-          key={item.id} 
-          className="bg-white p-4 rounded-[1.5rem] flex items-center gap-4 "
-        >
-          {/* Lingkaran Ikon */}
-          <div className="max-lg:w-[44px] max-lg:h-[44px]">
-            <img src={Profile} alt="" />
-          </div>
+      
+      <div>
+        <h1 className='text-[22px] text-[#343C6A] font-medium mb-4'>Jumlah Siswa Siswi</h1>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          {DataKelas.map((item) => (
+            <div 
+              key={item.id} 
+              className="bg-white p-4 rounded-[1.5rem] flex items-center gap-4"
+            >
+              {/* Lingkaran Ikon */}
+              <div className="max-lg:w-[44px] max-lg:h-[44px]">
+                <img src={Profile} alt="" />
+              </div>
 
-          {/* Informasi Teks */}
-          <div className="flex flex-col">
-            <span className="text-[#718EBF] text-[16px] max-lg:text-[12px]">
-              {item.nama}
-            </span>
-            <span className="text-[#1814F3] text-[32px] font-bold leading-tight">
-              {item.jumlah}
-            </span>
-          </div>
+              {/* Informasi Teks */}
+              <div className="flex flex-col">
+                <span className="text-[#718EBF] text-[16px] max-lg:text-[12px]">
+                  {item.nama}
+                </span>
+                <span className="text-[#1814F3] text-[32px] font-bold leading-tight">
+                  {item.jumlah}
+                </span>
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
-    </div>
-      </div>
       </div>
     </div>
   )

@@ -1,11 +1,19 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.jsx'
-import './index.css'
-import './index.css'
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { Provider } from "react-redux";
+import { RouterProvider } from "react-router-dom";
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+import "./index.css";
+import { store } from "./store/store";
+import { router } from "./routes/router";
+import AuthBootstrap from "./routes/AuthBootstrap";
+
+ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-)
+    <Provider store={store}>
+      <AuthBootstrap>
+        <RouterProvider router={router} />
+      </AuthBootstrap>
+    </Provider>
+  </React.StrictMode>
+);
