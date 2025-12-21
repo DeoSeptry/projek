@@ -1,10 +1,6 @@
-// src/routes/index.jsx
 import React from "react";
 import { createBrowserRouter } from "react-router-dom";
 
-import Login from "../pages/LOGIN";
-
-import HomeKepsek from "../pages/KepSek/HOME-KEPSEK";
 import TransaksiKepsek from "../pages/KepSek/TRANSAKSI-KEPSEK";
 
 import HomeWalkel from "../pages/waliKelas/HOME-WALKEL";
@@ -13,9 +9,12 @@ import TransaksiWalkel from "../pages/waliKelas/TRANSAKSI-WALKEL";
 import HomeWalmur from "../pages/WaliMurid/HOME-WALMUR";
 import TransaksiWalmur from "../pages/WaliMurid/TRANSAKSI-WALMUR";
 
-
-import { IndexRedirect, RedirectIfAuthenticated, RequireAuthRole } from "./guards";
 import DashboardLayout from "../components/layout/dashboardLayout";
+import { IndexRedirect, RedirectIfAuthenticated, RequireAuthRole } from "./guards";
+import LoginPage from "../pages/LoginPage";
+import HomeKepalaSekolah from "../pages/KepSek/HOME-KEPSEK";
+import AkunKepsek from "../pages/KepSek/AKUN-KEPSEK";
+import ProfilePage from "../pages/KepSek/ProfilePage";
 
 export const router = createBrowserRouter([
   { path: "/", element: <IndexRedirect /> },
@@ -24,28 +23,30 @@ export const router = createBrowserRouter([
     path: "/login",
     element: (
       <RedirectIfAuthenticated>
-        <Login />
+        <LoginPage />
       </RedirectIfAuthenticated>
     ),
   },
 
-  // SUPERADMIN (Kepsek)
+  // SUPERADMIN
   {
     element: (
-      <RequireAuthRole allowedRoles={["Superadmin"]}>
+      <RequireAuthRole allowedRoles={["superadmin"]}>
         <DashboardLayout />
       </RequireAuthRole>
     ),
     children: [
-      { path: "/homeKepsek", element: <HomeKepsek /> },
+      { path: "/homeKepsek", element: <HomeKepalaSekolah /> },
       { path: "/transaksiKepsek", element: <TransaksiKepsek /> },
+      { path: "/akunKepsek", element: <AkunKepsek /> },
+      { path: "/pengaturanKepsek", element: <ProfilePage /> },
     ],
   },
 
-  // TEACHER (Wali Kelas)
+  // TEACHER
   {
     element: (
-      <RequireAuthRole allowedRoles={["Teacher"]}>
+      <RequireAuthRole allowedRoles={["teacher"]}>
         <DashboardLayout />
       </RequireAuthRole>
     ),
@@ -55,10 +56,10 @@ export const router = createBrowserRouter([
     ],
   },
 
-  // PARENT (Wali Murid)
+  // PARENT
   {
     element: (
-      <RequireAuthRole allowedRoles={["Parent"]}>
+      <RequireAuthRole allowedRoles={["parent"]}>
         <DashboardLayout />
       </RequireAuthRole>
     ),
@@ -68,6 +69,5 @@ export const router = createBrowserRouter([
     ],
   },
 
-  // fallback
   { path: "*", element: <IndexRedirect /> },
 ]);

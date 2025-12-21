@@ -1,9 +1,9 @@
 // src/pages/waliKelas/HOME-WALKEL.jsx
 import React from 'react';
 import { useSelector } from 'react-redux';
-import ArusKeuangan from '../../components/ARUS-KEUANGAN';
 import Chart from '../../components/CHART-AKTIVITAS';
 import Profile from '../../assets/icons/icon-profile.png';
+import ArusKeuangan from '../../components/ArusKeuangan';
 
 export default function HomeWalkel() {
   const { user } = useSelector((state) => state.auth);

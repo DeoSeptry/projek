@@ -2,10 +2,10 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import ArusKeuangan from '../../components/ARUS-KEUANGAN';
 import Transaksi from '../../components/RIWAYAT-TRANSAKSI';
 import Chart from '../../components/CHART-AKTIVITAS';
 import { Wallet, TrendingUp, PiggyBank } from 'lucide-react';
+import ArusKeuangan from '../../components/ArusKeuangan';
 
 export default function HomeWalmur() {
   const navigate = useNavigate();

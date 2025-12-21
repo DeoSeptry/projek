@@ -1,10 +1,10 @@
 // src/pages/WaliMurid/TRANSAKSI-WALMUR.jsx
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import Arus from '../../components/ARUS-KEUANGAN';
 import Riwayat from '../../components/RIWAYAT-TRANSAKSI';
 import WithdrawalModal from '../../components/Modal1';
 import { Wallet, TrendingDown, History } from 'lucide-react';
+import ArusKeuangan from '../../components/ArusKeuangan';
 
 export default function TransaksiWalmur() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -24,7 +24,7 @@ export default function TransaksiWalmur() {
       </h1>
       
       <div className='mb-6'>
-        <Arus />
+        <ArusKeuangan />
       </div>
 
       {/* Info Card dengan Tombol Tarik Tunai */}
