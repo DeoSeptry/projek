@@ -16,6 +16,9 @@ import TransaksiWalmur from "../pages/WaliMurid/TRANSAKSI-WALMUR";
 
 import { IndexRedirect, RedirectIfAuthenticated, RequireAuthRole } from "./guards";
 import DashboardLayout from "../components/layout/dashboardLayout";
+import ProfilePage from "../pages/WaliMurid/SETTING-WALMUR";
+
+
 
 export const router = createBrowserRouter([
   { path: "/", element: <IndexRedirect /> },
@@ -65,6 +68,7 @@ export const router = createBrowserRouter([
     children: [
       { path: "/homeWalmur", element: <HomeWalmur /> },
       { path: "/transaksiWalmur", element: <TransaksiWalmur /> },
+      {path: "/settingWalmur" ,element :<ProfilePage />}
     ],
   },
 

@@ -62,6 +62,13 @@ const MENU_ITEMS = [
     icon: ArrowLeftRight,
     userTypes: ["Parent"],
   },
+  {
+    id: "walmur-setting",
+    path: "/settingWalmur",
+    label: "Setting",
+    icon: Settings,
+    userTypes: [ "Parent"],
+  }
 ];
 
 export default function DashboardLayout() {
