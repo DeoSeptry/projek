@@ -3,7 +3,7 @@ import React from "react";
 import iconProfile from "../../assets/icons/icon-profile.png";
 import { useGetStudentsTotalQuery } from "../../services/api/students.api";
 
-import CHARTAKTIVITAS from "../../components/CHART-AKTIVITAS";
+import CharAktivitas from "../../components/ChartAktivitas";
 import ArusKeuangan from "../../components/ArusKeuangan";
 
 export default function HomeKepalaSekolah() {
@@ -36,7 +36,7 @@ export default function HomeKepalaSekolah() {
       <ArusKeuangan/>
 
       <div className="mt-6">
-        <CHARTAKTIVITAS />
+        <CharAktivitas />
       </div>
 
       <div className="mt-6">

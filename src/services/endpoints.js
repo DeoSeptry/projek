@@ -9,6 +9,12 @@ export const ENDPOINTS = {
     LIST: "/transactions",
     TOTAL_AMOUNTS: "/transactions/total-amounts",
     DETAIL: (transactionId) => `/transactions/${transactionId}`,
+    CHART: "/transactions/chart",
+    UPDATE: (transactionId) => `/transactions/${transactionId}`,
+    DELETE: (transactionId) => `/transactions/${transactionId}`,
+    DEPOSIT: "/transactions/deposit",
+    WITHDRAW: "/transactions/withdraw",
+    APPROVE_WITHDRAW: (transactionId) => `/transactions/withdraw/${transactionId}`,
   },
 
   STUDENT: {

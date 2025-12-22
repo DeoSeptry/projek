@@ -3,7 +3,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import Transaksi from '../../components/RIWAYAT-TRANSAKSI';
-import Chart from '../../components/CHART-AKTIVITAS';
+import Chart from '../../components/ChartAktivitas';
 import { Wallet, TrendingUp, PiggyBank } from 'lucide-react';
 import ArusKeuangan from '../../components/ArusKeuangan';
 

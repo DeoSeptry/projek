@@ -1,21 +1,21 @@
 // src/pages/Kepsek/TransaksiKepsek.jsx
-import React, { useState, useCallback, useEffect } from 'react';
-import { useGetTransactionsQuery } from '../../services/api/transactions.api';
-import ArusKeuangan from '../../components/ArusKeuangan';
-import GradeFilter from '../../components/GradeFilter';
-import DayRangeFilter from '../../components/DayRangeFilter';
-import TransactionTable from '../../components/TransactionTable';
+import React, { useState, useCallback, useEffect } from "react";
+import { useGetTransactionsQuery } from "../../services/api/transactions.api";
+import ArusKeuangan from "../../components/ArusKeuangan";
+import GradeFilter from "../../components/GradeFilter";
+import DayRangeFilter from "../../components/DayRangeFilter";
+import TransactionTable from "../../components/TransactionTable";
 
 export default function TransaksiKepsek() {
   const [filters, setFilters] = useState({
-    grade: '', 
-    dayRange: '', 
-    search: '',
+    grade: "",
+    dayRange: "",
+    search: "",
     page: 1,
     limit: 10,
   });
 
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -86,7 +86,10 @@ export default function TransaksiKepsek() {
             {/* Filters Group */}
             <div className="flex flex-wrap items-center gap-3">
               <GradeFilter value={filters.grade} onChange={handleGradeChange} />
-              <DayRangeFilter value={filters.dayRange} onChange={handleDayRangeChange} />
+              <DayRangeFilter
+                value={filters.dayRange}
+                onChange={handleDayRangeChange}
+              />
             </div>
           </div>
 
@@ -99,10 +102,14 @@ export default function TransaksiKepsek() {
                   Kelas {filters.grade}
                   <button
                     type="button"
-                    onClick={() => handleGradeChange('')}
+                    onClick={() => handleGradeChange("")}
                     className="hover:text-blue-900"
                   >
-                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <svg
+                      className="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
                       <path
                         fillRule="evenodd"
                         d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
@@ -117,10 +124,14 @@ export default function TransaksiKepsek() {
                   {filters.dayRange} Hari Terakhir
                   <button
                     type="button"
-                    onClick={() => handleDayRangeChange('')}
+                    onClick={() => handleDayRangeChange("")}
                     className="hover:text-green-900"
                   >
-                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <svg
+                      className="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
                       <path
                         fillRule="evenodd"
                         d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
@@ -135,10 +146,14 @@ export default function TransaksiKepsek() {
                   Pencarian: "{debouncedSearch}"
                   <button
                     type="button"
-                    onClick={() => handleSearchChange('')}
+                    onClick={() => handleSearchChange("")}
                     className="hover:text-purple-900"
                   >
-                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <svg
+                      className="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
                       <path
                         fillRule="evenodd"
                         d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
@@ -153,9 +168,9 @@ export default function TransaksiKepsek() {
                 onClick={() => {
                   setFilters((prev) => ({
                     ...prev,
-                    grade: '',
-                    dayRange: '',
-                    search: '',
+                    grade: "",
+                    dayRange: "",
+                    search: "",
                     page: 1,
                   }));
                 }}
@@ -178,6 +193,8 @@ export default function TransaksiKepsek() {
           totalPages={meta.totalPages || 1}
           totalResults={meta.totalResults || 0}
           onPageChange={handlePageChange}
+          showSearch={true}
+          showPagination={true}
         />
       </div>
     </div>

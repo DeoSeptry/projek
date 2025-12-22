@@ -73,7 +73,7 @@ export default function ProfilePage() {
     );
   }
 
-  const avatarUrl = profile?.avatar?.thumbnailUrl || profile?.avatar?.url;
+  const avatarUrl = profile?.avatar?.url;
   const hasAvatar = !!avatarUrl;
 
   return (
@@ -104,7 +104,7 @@ export default function ProfilePage() {
                 <div className="relative group">
                   <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-slate-200 shadow-lg">
                     <img
-                      src={avatarUrl || "/placeholder-avatar.png"}
+                      src={profile?.avatar?.url}
                       alt={profile?.name || "Avatar"}
                       className="w-full h-full object-cover"
                     />
