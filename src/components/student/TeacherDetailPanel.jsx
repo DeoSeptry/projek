@@ -9,7 +9,6 @@ export default function TeacherDetailPanel({ teacher }) {
       year: 'numeric',
     });
   };
-
   const getInitials = (name) => {
     return name
       .split(' ')
@@ -62,10 +61,14 @@ export default function TeacherDetailPanel({ teacher }) {
             <label className="text-lg font-medium text-gray-700 tracking-wide">
               Profil Wali Kelas
             </label>
-            <div className=''>
-             <p className=" text-left text-[#718EBF] mb-4 pb-2 border-b border-gray-200">
+
+            <div className='flex flex-col gap-3'>
+              <div className='flex justify-between border-b border-gray-200'>
+             <p className=" text-left text-[#718EBF] ">
             {teacher.name}
             </p>
+            <p className=' text-left text-[#718EBF]'>{teacher.name}</p> 
+            </div>
             <p className=" text-left mb-2 pb-2 border-b border-gray-200 text-[#718EBF]">
                 {teacher.username}
             </p>

@@ -15,9 +15,9 @@ export default function TeacherCard({ teacher, isActive, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`flex gap-2 items-center p-4 rounded-xl border-2 transition-all min-w-[140px] ${
+      className={`flex gap-2 items-center p-4 rounded-2xl transition-all min-w-[140px] ${
         isActive
-          ? 'border-blue-500 bg-blue-50 shadow-md'
+          ? 'border-blue-500 bg-blue-500 shadow-md'
           : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm'
       }`}
     >
@@ -45,18 +45,18 @@ export default function TeacherCard({ teacher, isActive, onClick }) {
       <div>
         <div className="flex flex-col">
           <span
-            className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full ${
+            className={`inline-flex items-center gap-1 py-1 text-xs font-medium ${
               isActive
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700'
+                ? ' text-white'
+                : ' text-blue-500'
             }`}
           >
-            <GraduationCap className="w-3.5 h-3.5" />
+            {/* <GraduationCap className="w-3.5 h-3.5" /> */}
             Kelas {teacher.grade}
           </span>
           <h4
             className={`mt-3 text-sm font-semibold text-left line-clamp-2 ${
-              isActive ? 'text-blue-700' : 'text-gray-900'
+              isActive ? 'text-white' : 'text-blue-500'
             }`}
           >
             {teacher.name}

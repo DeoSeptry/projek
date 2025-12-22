@@ -113,7 +113,7 @@ export default function StudentsTableView({
                 </th>
                 <td className="px-6 py-4">{student.teacherName}</td>
                 <td className="px-6 py-4">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  <span className="inline-flex px-2.5 py-0.5 text-xs font-medium">
                     Kelas {student.grade}
                   </span>
                 </td>
@@ -132,9 +132,28 @@ export default function StudentsTableView({
                 <td className="px-6 py-4 text-gray-500">
                   {formatDate(student.createdAt)}
                 </td>
+                
               </tr>
             );
           })}
+          <th scope="col" className="p-4">
+              <div className="flex items-center">
+                <input
+                  id="table-checkbox-all"
+                  type="checkbox"
+                  checked={isAllSelected}
+                  ref={(el) => {
+                    if (el) el.indeterminate = isSomeSelected;
+                  }}
+                  onChange={(e) => onSelectAll(e.target.checked)}
+                  className="w-4 h-4 border border-gray-300 rounded bg-white focus:ring-2 focus:ring-blue-500"
+                />
+                <label htmlFor="table-checkbox-all" className="sr-only">
+                  Select all
+                </label>
+              </div>
+              <div>cek ah</div>
+            </th>
         </tbody>
       </table>
     </div>
