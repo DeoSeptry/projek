@@ -10,6 +10,7 @@ import HomeWalmur from "../pages/WaliMurid/HOME-WALMUR";
 import TransaksiWalmur from "../pages/WaliMurid/TRANSAKSI-WALMUR";
 
 import DashboardLayout from "../components/layout/dashboardLayout";
+
 import { IndexRedirect, RedirectIfAuthenticated, RequireAuthRole } from "./guards";
 import LoginPage from "../pages/LoginPage";
 import HomeKepalaSekolah from "../pages/KepSek/HOME-KEPSEK";
@@ -66,6 +67,7 @@ export const router = createBrowserRouter([
     children: [
       { path: "/homeWalmur", element: <HomeWalmur /> },
       { path: "/transaksiWalmur", element: <TransaksiWalmur /> },
+      {path: "/settingWalmur" ,element :<ProfilePage />}
     ],
   },
 

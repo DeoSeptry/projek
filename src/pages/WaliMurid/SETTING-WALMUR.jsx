@@ -12,10 +12,8 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA]">
-      <Sidebar />
-      <div className="flex flex-col md:ml-64 transition-all duration-300">
-      <Navbar />
+    <div className="min-h-screen bg-[#F5F7FA] p-6">
+      <div className="flex flex-col transition-all duration-300">
 
       <div className=" px-6 pt-3 flex flex-col justify-between lg:flex-row gap-8">
         <CardProfile data={userData} />
