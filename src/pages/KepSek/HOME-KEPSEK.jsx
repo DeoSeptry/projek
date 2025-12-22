@@ -1,57 +1,79 @@
-import React from 'react'
-import ArusKeuangan from '../../components/ARUS-KEUANGAN';
-import Chart from '../../components/CHART-AKTIVITAS';
-import Profile from '../../assets/icons/icon-profile.png'
+// src/pages/KepalaSekolah/HomeKepalaSekolah.jsx
+import React from "react";
+import iconProfile from "../../assets/icons/icon-profile.png";
+import { useGetStudentsTotalQuery } from "../../services/api/students.api";
 
-export default function HOMEKEPSEK() {
+import CHARTAKTIVITAS from "../../components/CHART-AKTIVITAS";
+import ArusKeuangan from "../../components/ArusKeuangan";
 
-  const DataKelas = [
-    {id:1, nama: "Kelas 1", jumlah :20},
-    {id:2, nama: "Kelas 2", jumlah :20},
-    {id:3, nama: "Kelas 3", jumlah :20},
-    {id:4, nama: "Kelas 4", jumlah :20},
-    {id:5, nama: "Kelas 5", jumlah :20},
-    {id:6, nama: "Kelas 6", jumlah :20},
-  ];
+export default function HomeKepalaSekolah() {
+
+
+  // ✅ total siswa per grade
+  const {
+    data: studentsTotal,
+    isLoading: isLoadingStudentsTotal,
+    error: studentsTotalError,
+  } = useGetStudentsTotalQuery();
+
+  const dataKelasSekolah = React.useMemo(() => {
+    return [
+      { id: 1, namaKelas: "Kelas 1", jumlahSiswa: studentsTotal?.grade1 ?? 0 },
+      { id: 2, namaKelas: "Kelas 2", jumlahSiswa: studentsTotal?.grade2 ?? 0 },
+      { id: 3, namaKelas: "Kelas 3", jumlahSiswa: studentsTotal?.grade3 ?? 0 },
+      { id: 4, namaKelas: "Kelas 4", jumlahSiswa: studentsTotal?.grade4 ?? 0 },
+      { id: 5, namaKelas: "Kelas 5", jumlahSiswa: studentsTotal?.grade5 ?? 0 },
+      { id: 6, namaKelas: "Kelas 6", jumlahSiswa: studentsTotal?.grade6 ?? 0 },
+    ];
+  }, [studentsTotal]);
 
   return (
-    <div className='bg-[#F5F7FA] min-h-screen p-6'>
-      <h1 className='text-[22px] text-[#343C6A] font-medium mb-4'>Arus Keuangan</h1>
-      
-      <div>
-        <ArusKeuangan />
+    <div className="bg-[#F5F7FA] min-h-screen p-6">
+      <h1 className="text-[22px] text-[#343C6A] font-medium mb-4">
+        Arus Keuangan
+      </h1>
+
+      <ArusKeuangan/>
+
+      <div className="mt-6">
+        <CHARTAKTIVITAS />
       </div>
 
-      <div>
-        <Chart/>
-      </div>
-      
-      <div>
-        <h1 className='text-[22px] text-[#343C6A] font-medium mb-4'>Jumlah Siswa Siswi</h1>
+      <div className="mt-6">
+        <h1 className="text-[22px] text-[#343C6A] font-medium mb-4">
+          Jumlah Siswa Siswi
+        </h1>
+
+        {studentsTotalError ? (
+          <p className="text-sm text-red-600 mb-3">
+            Gagal memuat total siswa
+          </p>
+        ) : null}
+
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {DataKelas.map((item) => (
-            <div 
-              key={item.id} 
+          {dataKelasSekolah.map((kelas) => (
+            <div
+              key={kelas.id}
               className="bg-white p-4 rounded-[1.5rem] flex items-center gap-4"
             >
-              {/* Lingkaran Ikon */}
               <div className="max-lg:w-[44px] max-lg:h-[44px]">
-                <img src={Profile} alt="" />
+                <img src={iconProfile} alt="Icon Profile" />
               </div>
 
-              {/* Informasi Teks */}
               <div className="flex flex-col">
                 <span className="text-[#718EBF] text-[16px] max-lg:text-[12px]">
-                  {item.nama}
+                  {kelas.namaKelas}
                 </span>
+
                 <span className="text-[#1814F3] text-[32px] font-bold leading-tight">
-                  {item.jumlah}
+                  {isLoadingStudentsTotal ? "..." : kelas.jumlahSiswa}
                 </span>
               </div>
             </div>
           ))}
         </div>
+
       </div>
     </div>
-  )
+  );
 }

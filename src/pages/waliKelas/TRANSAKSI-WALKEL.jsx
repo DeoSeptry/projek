@@ -1,10 +1,10 @@
 // src/pages/waliKelas/TRANSAKSI-WALKEL.jsx
 import React, { useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
-import Arus from '../../components/ARUS-KEUANGAN';
 import Riwayat from '../../components/RIWAYAT-TRANSAKSI';
 import { Search, ChevronDown, Download } from 'lucide-react';
 import WithdrawalModal from '../../components/ModalTambahTransaksi';
+import ArusKeuangan from '../../components/ArusKeuangan';
 
 export default function TransaksiWalkel() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -36,7 +36,7 @@ export default function TransaksiWalkel() {
       </h1>
       
       <div className='mb-6'>
-        <Arus />
+        <ArusKeuangan />
       </div>
 
       {/* Header dengan tombol tambah transaksi */}
