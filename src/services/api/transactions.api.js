@@ -197,6 +197,7 @@ export const {
   useGetTransactionTotalAmountsQuery,
   useGetTransactionByIdQuery,
   useGetTransactionsChartQuery,
+  useLazyGetTransactionsQuery,
 
   useUpdateTransactionAmountMutation,
   useDeleteTransactionMutation,

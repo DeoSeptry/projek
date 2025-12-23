@@ -156,10 +156,7 @@ export default function DepositModal({ isOpen, onClose }) {
                   {selectedStudent ? (
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-gray-900 truncate">
-                        {selectedStudent.name}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {selectedStudent.nisn} • Kelas {selectedStudent.grade}
+                        {selectedStudent.studentName}
                       </p>
                     </div>
                   ) : (
@@ -210,22 +207,13 @@ export default function DepositModal({ isOpen, onClose }) {
                           type="button"
                           onClick={() => handleSelectStudent(student)}
                           className={`
-                            w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors
+                            w-full text-black px-4 py-3 text-left hover:bg-gray-50 transition-colors
                             ${selectedStudentId === student.id ? 'bg-blue-50' : ''}
                           `}
                         >
-                          <p className="font-medium text-gray-900 text-sm">
-                            {student.name}
+                          <p className="font-medium text-black text-sm">
+                            {student.studentName}
                           </p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-xs text-gray-500">
-                              NISN: {student.nisn}
-                            </span>
-                            <span className="text-xs text-gray-400">•</span>
-                            <span className="text-xs text-gray-500">
-                              Kelas {student.grade}
-                            </span>
-                          </div>
                         </button>
                       ))
                     )}

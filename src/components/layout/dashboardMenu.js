@@ -39,6 +39,13 @@ export const DASHBOARD_MENU = [
     icon: ArrowLeftRight,
     roles: ["teacher"],
   },
+  {
+    id: "walkel-akun",
+    path: "/akunWalkel",
+    label: "Akun",
+    icon: UserCircle,
+    roles: ["teacher"],
+  },
 
   // PARENT (Wali Murid)
   {

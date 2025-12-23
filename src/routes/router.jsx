@@ -15,7 +15,8 @@ import { IndexRedirect, RedirectIfAuthenticated, RequireAuthRole } from "./guard
 import LoginPage from "../pages/LoginPage";
 import HomeKepalaSekolah from "../pages/KepSek/HomeKepsek";
 import AkunKepsek from "../pages/KepSek/AkunKepsek";
-import ProfilePage from "../pages/KepSek/ProfilePage";
+import ProfilePage from "../pages/ProfilePage";
+import AkunWalkel from "../pages/waliKelas/AkunWalkel";
 
 export const router = createBrowserRouter([
   { path: "/", element: <IndexRedirect /> },
@@ -64,6 +65,7 @@ export const router = createBrowserRouter([
     children: [
       { path: "/homeWalkel", element: <HomeWalkel /> },
       { path: "/transaksiWalkel", element: <TransaksiWalkel /> },
+      { path: "/akunWalkel", element: <AkunWalkel /> },
     ],
   },
 

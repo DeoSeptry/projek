@@ -1,9 +1,9 @@
 // pages/ProfilePage.jsx
 import React, { useState } from "react";
 import { Camera, Trash2, User, Phone, Lock, Mail, Check } from "lucide-react";
-import { useDeleteAvatarMutation } from "../../services/api/profile.api";
-import { useProfileForm } from "../../hooks/profile/useProfileForm";
-import { useAvatarForm } from "../../hooks/profile/useAvatarForm";
+import { useDeleteAvatarMutation } from "../services/api/profile.api";
+import { useProfileForm } from "../hooks/profile/useProfileForm";
+import { useAvatarForm } from "../hooks/profile/useAvatarForm";
 
 export default function ProfilePage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);

@@ -1,33 +1,36 @@
 // src/pages/waliKelas/TRANSAKSI-WALKEL.jsx
-import React, { useState, useCallback, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { Download } from 'lucide-react';
-import toast from 'react-hot-toast';
+import React, { useState, useCallback, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { Download } from "lucide-react";
+import toast from "react-hot-toast";
 
-import ArusKeuangan from '../../components/ArusKeuangan';
-import DayRangeFilter from '../../components/DayRangeFilter';
-import TransactionTable from '../../components/TransactionTable';
-import EditTransactionModal from '../../components/modal/EditTransactionModal';
-import DeleteTransactionModal from '../../components/modal/DeleteTransactionModal';
+import ArusKeuangan from "../../components/ArusKeuangan";
+import DayRangeFilter from "../../components/DayRangeFilter";
+import TransactionTable from "../../components/TransactionTable";
+import EditTransactionModal from "../../components/modal/EditTransactionModal";
+import DeleteTransactionModal from "../../components/modal/DeleteTransactionModal";
 
 import {
   useGetTransactionsQuery,
   useUpdateTransactionAmountMutation,
   useDeleteTransactionMutation,
-} from '../../services/api/transactions.api';
-import DepositModal from '../../components/modal/DepositModal';
+  useLazyGetTransactionsQuery,
+} from "../../services/api/transactions.api";
+import DepositModal from "../../components/modal/DepositModal";
+import { exportTransactionsPdf } from "../../utils/exportTransactionsPdf";
 
 export default function TransaksiWalkel() {
   const { user } = useSelector((state) => state.auth);
 
   const [filters, setFilters] = useState({
-    dayRange: '',
-    search: '',
+    dayRange: "",
+    search: "",
     page: 1,
     limit: 10,
   });
 
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [isDownloading, setIsDownloading] = useState(false);
 
   // Modal states
   const [depositModal, setDepositModal] = useState(false);
@@ -64,14 +67,87 @@ export default function TransaksiWalkel() {
     isFetching,
   } = useGetTransactionsQuery(apiParams);
 
-  const [updateAmount, { isLoading: isUpdating }] = useUpdateTransactionAmountMutation();
-  const [deleteTransaction, { isLoading: isDeleting }] = useDeleteTransactionMutation();
+  const [updateAmount, { isLoading: isUpdating }] =
+    useUpdateTransactionAmountMutation();
+  const [deleteTransaction, { isLoading: isDeleting }] =
+    useDeleteTransactionMutation();
+  const [triggerGetTransactions] = useLazyGetTransactionsQuery();
+
+  const handleDownload = useCallback(async () => {
+    if (isDownloading) return;
+
+    const loadingToast = toast.loading("Menyiapkan PDF...");
+    setIsDownloading(true);
+
+    try {
+      // ✅ ambil semua data sesuai filter saat ini (dayRange + debouncedSearch)
+      const baseParams = {
+        ...(filters.dayRange ? { dayRange: filters.dayRange } : {}),
+        ...(debouncedSearch ? { search: debouncedSearch } : {}),
+      };
+      const EXPORT_LIMIT = 100;
+
+      // page 1
+      const first = await triggerGetTransactions({
+        ...baseParams,
+        page: 1,
+        limit: EXPORT_LIMIT,
+      }).unwrap();
+
+      const items1 = first?.items ?? [];
+      const meta1 = first?.meta ?? {};
+      const totalPages = meta1.totalPages ?? 1;
+
+      let allItems = [...items1];
+
+      // page 2..n
+      for (let p = 2; p <= totalPages; p++) {
+        const next = await triggerGetTransactions({
+          ...baseParams,
+          page: p,
+          limit: EXPORT_LIMIT,
+        }).unwrap();
+
+        allItems = allItems.concat(next?.items ?? []);
+      }
+
+      // ✅ generate PDF
+      const subtitleParts = [];
+      if (filters.dayRange)
+        subtitleParts.push(`Range: ${filters.dayRange} hari`);
+      if (debouncedSearch) subtitleParts.push(`Search: "${debouncedSearch}"`);
+      const subtitle = subtitleParts.join(" | ");
+
+      const today = new Date();
+      const ymd = today.toISOString().slice(0, 10);
+
+      exportTransactionsPdf({
+        items: allItems,
+        title: "Laporan Transaksi",
+        subtitle,
+        fileName: `laporan-transaksi-${ymd}.pdf`,
+      });
+
+      toast.dismiss(loadingToast);
+      toast.success("PDF berhasil dibuat ✅");
+    } catch (e) {
+      toast.dismiss(loadingToast);
+      toast.error(e?.data?.message || e?.message || "Gagal membuat PDF");
+    } finally {
+      setIsDownloading(false);
+    }
+  }, [
+    isDownloading,
+    triggerGetTransactions,
+    filters.dayRange,
+    debouncedSearch,
+  ]);
 
   const transactions = response?.items || [];
   const meta = response?.meta || {};
 
   const download = {
-    nominal: 'Rp 20.000',
+    nominal: "Rp 20.000",
   };
 
   // Handlers
@@ -87,11 +163,6 @@ export default function TransaksiWalkel() {
     setFilters((prev) => ({ ...prev, page }));
   }, []);
 
-  const handleDownload = () => {
-    console.log('Downloading transaction data...');
-    toast.success('Download dimulai...');
-  };
-
   // Edit handlers
   const handleEditClick = (transaction) => {
     setEditModal({ isOpen: true, transaction });
@@ -100,16 +171,17 @@ export default function TransaksiWalkel() {
   const handleEditSubmit = async ({ transactionId, amount }) => {
     try {
       await updateAmount({ transactionId, amount }).unwrap();
-      toast.success('✅ Nominal transaksi berhasil diperbarui', {
+      toast.success("✅ Nominal transaksi berhasil diperbarui", {
         duration: 3000,
       });
       setEditModal({ isOpen: false, transaction: null });
     } catch (error) {
-      const errorMessage = error?.data?.message || 'Gagal memperbarui nominal transaksi';
+      const errorMessage =
+        error?.data?.message || "Gagal memperbarui nominal transaksi";
       toast.error(`❌ ${errorMessage}`, {
         duration: 4000,
       });
-      console.error('Update error:', error);
+      console.error("Update error:", error);
     }
   };
 
@@ -125,21 +197,21 @@ export default function TransaksiWalkel() {
   };
 
   const handleDeleteConfirm = async (transactionId) => {
-    const loadingToast = toast.loading('Menghapus transaksi...');
+    const loadingToast = toast.loading("Menghapus transaksi...");
     try {
       await deleteTransaction(transactionId).unwrap();
       toast.dismiss(loadingToast);
-      toast.success('✅ Transaksi berhasil dihapus', {
+      toast.success("✅ Transaksi berhasil dihapus", {
         duration: 3000,
       });
       setDeleteModal({ isOpen: false, transaction: null });
     } catch (error) {
       toast.dismiss(loadingToast);
-      const errorMessage = error?.data?.message || 'Gagal menghapus transaksi';
+      const errorMessage = error?.data?.message || "Gagal menghapus transaksi";
       toast.error(`❌ ${errorMessage}`, {
         duration: 4000,
       });
-      console.error('Delete error:', error);
+      console.error("Delete error:", error);
     }
   };
 
@@ -197,7 +269,7 @@ export default function TransaksiWalkel() {
                   {filters.dayRange} Hari Terakhir
                   <button
                     type="button"
-                    onClick={() => handleDayRangeChange('')}
+                    onClick={() => handleDayRangeChange("")}
                     className="hover:text-green-900"
                   >
                     <svg
@@ -219,7 +291,7 @@ export default function TransaksiWalkel() {
                   Pencarian: "{debouncedSearch}"
                   <button
                     type="button"
-                    onClick={() => handleSearchChange('')}
+                    onClick={() => handleSearchChange("")}
                     className="hover:text-purple-900"
                   >
                     <svg
@@ -241,8 +313,8 @@ export default function TransaksiWalkel() {
                 onClick={() => {
                   setFilters((prev) => ({
                     ...prev,
-                    dayRange: '',
-                    search: '',
+                    dayRange: "",
+                    search: "",
                     page: 1,
                   }));
                 }}
@@ -272,8 +344,6 @@ export default function TransaksiWalkel() {
           onDelete={handleDeleteClick}
         />
       </div>
-
-      {/* Download Data Transaksi */}
       <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
         <div className="flex justify-between items-center max-md:flex-col max-md:gap-4">
           <div className="flex flex-col gap-1">
@@ -286,15 +356,17 @@ export default function TransaksiWalkel() {
           </div>
           <button
             onClick={handleDownload}
-            className="rounded-2xl text-[16px] bg-[#1814F3] text-white py-2.5 px-6 font-medium hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center gap-2"
+            disabled={isDownloading}
+            className={`rounded-2xl text-[16px] bg-[#1814F3] text-white py-2.5 px-6 font-medium hover:bg-blue-700 transition-colors
+          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center gap-2
+          ${isDownloading ? "opacity-70 cursor-not-allowed" : ""}`}
           >
             <Download size={18} />
-            <span>Download PDF</span>
+            <span>{isDownloading ? "Membuat PDF..." : "Download PDF"}</span>
           </button>
         </div>
       </div>
 
-      {/* Permintaan Penarikan Tabungan */}
       <div className="bg-white rounded-2xl p-6 shadow-sm">
         <div className="flex justify-between items-center max-md:flex-col max-md:gap-4">
           <div className="flex flex-col gap-1 flex-1">

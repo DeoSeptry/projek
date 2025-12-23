@@ -24,6 +24,14 @@ export const ENDPOINTS = {
     GRADUATE: "/students/graduate",
   },
 
+  PARENTS: {
+    LIST: "/users/parents",
+    DETAIL: (userId) => `/users/parents/${userId}`,
+    CREATE: "/users/parents",
+    UPDATE: (userId) => `/users/parents/${userId}`,
+    DELETE: (userId) => `/users/parents/${userId}`,
+  }, 
+
   TEACHER: {
     LIST: "/users/teachers",
     DETAIL: (userId) => `/users/teachers/${userId}`,
