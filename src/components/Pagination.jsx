@@ -62,8 +62,9 @@ export default function Pagination({ currentPage, totalPages, onPageChange }) {
     }
   };
 
-  if (totalPages <= 1) {
-    return null; // Don't show pagination if only 1 page
+  // ✅ PERUBAHAN: Tampilkan pagination bahkan jika hanya 1 halaman
+  if (totalPages < 1) {
+    return null; // Hanya hide jika tidak ada data sama sekali
   }
 
   return (

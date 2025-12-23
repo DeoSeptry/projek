@@ -9,6 +9,12 @@ export const ENDPOINTS = {
     LIST: "/transactions",
     TOTAL_AMOUNTS: "/transactions/total-amounts",
     DETAIL: (transactionId) => `/transactions/${transactionId}`,
+    CHART: "/transactions/chart",
+    UPDATE: (transactionId) => `/transactions/${transactionId}`,
+    DELETE: (transactionId) => `/transactions/${transactionId}`,
+    DEPOSIT: "/transactions/deposit",
+    WITHDRAW: "/transactions/withdraw",
+    APPROVE_WITHDRAW: (transactionId) => `/transactions/withdraw/${transactionId}`,
   },
 
   STUDENT: {
@@ -17,6 +23,14 @@ export const ENDPOINTS = {
     PROMOTE: "/students/promote-to-next-grade",
     GRADUATE: "/students/graduate",
   },
+
+  PARENTS: {
+    LIST: "/users/parents",
+    DETAIL: (userId) => `/users/parents/${userId}`,
+    CREATE: "/users/parents",
+    UPDATE: (userId) => `/users/parents/${userId}`,
+    DELETE: (userId) => `/users/parents/${userId}`,
+  }, 
 
   TEACHER: {
     LIST: "/users/teachers",
