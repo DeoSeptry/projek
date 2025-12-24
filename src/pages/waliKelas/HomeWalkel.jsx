@@ -2,10 +2,8 @@
 import React, { useState, useCallback } from "react";
 import toast from "react-hot-toast"; // atau library toast lainnya
 import { useSelector } from "react-redux";
-
 import Chart from "../../components/ChartAktivitas";
 import ArusKeuangan from "../../components/ArusKeuangan";
-import TransactionTable from "../../components/TransactionTable";
 import EditTransactionModal from "../../components/modal/EditTransactionModal";
 import DeleteTransactionModal from "../../components/modal/DeleteTransactionModal";
 import { 
@@ -13,6 +11,7 @@ import {
   useUpdateTransactionAmountMutation,
   useDeleteTransactionMutation 
 } from "../../services/api/transactions.api";
+import TransactionTable from "../../components/table/TransactionTable";
 
 export default function HomeWalkel() {
   const { user } = useSelector((state) => state.auth);

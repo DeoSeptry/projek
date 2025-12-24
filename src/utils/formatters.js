@@ -16,3 +16,10 @@ export const formatDate = (isoString) => {
     minute: '2-digit',
   });
 };
+
+   export const formatBalance = (balance) => {
+    if (balance === null || balance === undefined || isNaN(balance)) {
+      return '-';
+    }
+    return formatCurrency(balance);
+  };

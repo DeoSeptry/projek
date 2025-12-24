@@ -6,10 +6,11 @@ const requiredTrimmed = (msg) => z.preprocess(trim, z.string().min(1, msg));
 /** Item transaksi (sesuaikan jika ada field lain) */
 export const TransactionItemSchema = z.object({
   id: z.string(),
-  name: z.string(),
-  grade: z.coerce.number(),
+name: z.string().optional().default(""),
+grade: z.coerce.number().optional().default(0),
+reason: z.string().optional(), // Khusus withdrawal
   amount: z.union([z.string(), z.number()]),
-  balance: z.coerce.number(),
+  balance: z.coerce.number().default("-"),
   date: z.string(),
   status: z.string(),
   type: z.string(),
@@ -74,7 +75,6 @@ export const TransactionDepositSchema = z.object({
 });
 
 export const TransactionWithdrawSchema = z.object({
-  studentId: requiredTrimmed("studentId wajib diisi."),
   amount: z.coerce.number().positive("Amount harus > 0"),
   reason: requiredTrimmed("Alasan wajib diisi."),
 });

@@ -1,20 +1,47 @@
 // src/pages/WaliMurid/TRANSAKSI-WALMUR.jsx
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useSelector } from 'react-redux';
-import Riwayat from '../../components/RIWAYAT-TRANSAKSI';
-import WithdrawalModal from '../../components/Modal1';
 import { Wallet, TrendingDown, History } from 'lucide-react';
 import ArusKeuangan from '../../components/ArusKeuangan';
+import TransactionTable from '../../components/table/TransactionTable';
+import { useGetTransactionsQuery } from '../../services/api/transactions.api';
+import WithdrawModal from '../../components/modal/WithdrawModal';
 
 export default function TransaksiWalmur() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { user } = useSelector((state) => state.auth);
 
-  // Data dummy - ganti dengan data dari API
+  const [filters, setFilters] = useState({
+    page: 1,
+    limit: 10,
+    search: "",
+  });
+
+  const {
+    data: response,
+    isLoading,
+    isError,
+    isFetching,
+    refetch,
+  } = useGetTransactionsQuery(filters);
+
+  const transactions = response?.items || [];
+  const meta = response?.meta || {};
+
+  const handlePageChange = useCallback((page) => {
+    setFilters((prev) => ({ ...prev, page }));
+  }, []);
+
+  const handleWithdrawSuccess = () => {
+    // Refresh data setelah withdraw berhasil
+    refetch();
+  };
+
+  // Data saldo - ganti dengan data dari API
   const saldoInfo = {
-    saldoTersedia: "Rp 250.000",
-    batasMinimal: "Rp 50.000",
-    maxPenarikan: "Rp 200.000"
+    saldoTersedia: 250000,
+    batasMinimal: 50000,
+    maxPenarikan: 200000
   };
 
   return (
@@ -46,7 +73,9 @@ export default function TransaksiWalmur() {
                 </div>
                 <div>
                   <p className='text-xs text-[#718EBF]'>Saldo Tersedia</p>
-                  <p className='text-sm font-semibold text-[#343C6A]'>{saldoInfo.saldoTersedia}</p>
+                  <p className='text-sm font-semibold text-[#343C6A]'>
+                    Rp {saldoInfo.saldoTersedia.toLocaleString('id-ID')}
+                  </p>
                 </div>
               </div>
 
@@ -56,7 +85,9 @@ export default function TransaksiWalmur() {
                 </div>
                 <div>
                   <p className='text-xs text-[#718EBF]'>Batas Minimal</p>
-                  <p className='text-sm font-semibold text-[#343C6A]'>{saldoInfo.batasMinimal}</p>
+                  <p className='text-sm font-semibold text-[#343C6A]'>
+                    Rp {saldoInfo.batasMinimal.toLocaleString('id-ID')}
+                  </p>
                 </div>
               </div>
 
@@ -66,7 +97,9 @@ export default function TransaksiWalmur() {
                 </div>
                 <div>
                   <p className='text-xs text-[#718EBF]'>Max Penarikan</p>
-                  <p className='text-sm font-semibold text-[#343C6A]'>{saldoInfo.maxPenarikan}</p>
+                  <p className='text-sm font-semibold text-[#343C6A]'>
+                    Rp {saldoInfo.maxPenarikan.toLocaleString('id-ID')}
+                  </p>
                 </div>
               </div>
             </div>
@@ -93,7 +126,17 @@ export default function TransaksiWalmur() {
         </div>
 
         <div className='border-t border-gray-100 pt-6'>
-          <Riwayat />
+          <TransactionTable
+            data={transactions}
+            isLoading={isLoading || isFetching}
+            isError={isError}
+            currentPage={meta.page || 1}
+            totalPages={meta.totalPages || 1}
+            totalResults={meta.totalResults || 0}
+            onPageChange={handlePageChange}
+            showSearch={false}
+            showPagination={true}
+          />
         </div>
       </div>
 
@@ -107,13 +150,18 @@ export default function TransaksiWalmur() {
         </h3>
         <ul className='text-[14px] text-[#718EBF] space-y-2 ml-8'>
           <li>• Penarikan tunai membutuhkan waktu proses 1-2 hari kerja</li>
-          <li>• Saldo minimal yang harus tersisa adalah {saldoInfo.batasMinimal}</li>
-          <li>• Maksimal penarikan per transaksi adalah {saldoInfo.maxPenarikan}</li>
+          <li>• Saldo minimal yang harus tersisa adalah Rp {saldoInfo.batasMinimal.toLocaleString('id-ID')}</li>
+          <li>• Maksimal penarikan per transaksi adalah Rp {saldoInfo.maxPenarikan.toLocaleString('id-ID')}</li>
           <li>• Dana akan dikirim ke rekening yang terdaftar</li>
         </ul>
       </div>
 
-      <WithdrawalModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <WithdrawModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={handleWithdrawSuccess}
+        saldoInfo={saldoInfo}
+      />
     </div>
   );
 }

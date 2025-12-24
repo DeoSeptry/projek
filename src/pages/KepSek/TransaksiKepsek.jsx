@@ -2,9 +2,9 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { useGetTransactionsQuery } from "../../services/api/transactions.api";
 import ArusKeuangan from "../../components/ArusKeuangan";
-import GradeFilter from "../../components/GradeFilter";
-import DayRangeFilter from "../../components/DayRangeFilter";
-import TransactionTable from "../../components/TransactionTable";
+import GradeFilter from "../../components/filter/GradeFilter";
+import DayRangeFilter from "../../components/filter/DayRangeFilter";
+import TransactionTable from "../../components/table/TransactionTable";
 
 export default function TransaksiKepsek() {
   const [filters, setFilters] = useState({

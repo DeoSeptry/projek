@@ -1,9 +1,9 @@
 // src/components/TransactionTable/TransactionTable.jsx
 import React from 'react';
 import { Edit2, Trash2 } from 'lucide-react';
-import SearchBar from './table/SearchBar';
-import BaseTable from './table/BaseTable';
-import { formatCurrency, formatDate } from '../utils/formatters';
+import SearchBar from './SearchBar';
+import BaseTable from './BaseTable';
+import { formatBalance, formatCurrency, formatDate } from '../../utils/formatters';
 import Pagination from './Pagination';
 
 export default function TransactionTable({
@@ -32,6 +32,22 @@ export default function TransactionTable({
     return type === 'DEPOSIT' ? 'Setoran' : 'Penarikan';
   };
 
+ const getStatusColor = (status) => {
+    const statusUpper = status?.toUpperCase();
+    switch (statusUpper) {
+      case 'SUCCESS':
+        return 'bg-green-100 text-green-800';
+      case 'PENDING':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'FAILED':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+
+
   // Base columns
   const baseColumns = [
     { header: 'Nama' },
@@ -56,17 +72,17 @@ export default function TransactionTable({
       <td className="px-6 py-4 font-medium whitespace-nowrap">{row.name}</td>
       <td className="px-6 py-4">{row.grade}</td>
       <td className="px-6 py-4 font-semibold">{formatCurrency(row.amount)}</td>
-      <td className="px-6 py-4">{formatCurrency(row.balance)}</td>
+      <td className="px-6 py-4">{formatBalance(row.balance)}</td>
       <td className="px-6 py-4 text-xs">{formatDate(row.date)}</td>
       <td className="px-6 py-4">
         <span
           className={`px-2.5 py-1 rounded-full text-xs font-medium ${getTypeColor(row.type)}`}
         >
-          {getTypeLabel(row.type)}
+          {row.type}
         </span>
       </td>
       <td className="px-6 py-4">
-        <span className="px-2.5 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+        <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${getStatusColor(row.status)}`}>
           {row.status}
         </span>
       </td>

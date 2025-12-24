@@ -1,9 +1,9 @@
 // src/components/CreateTeacherModal.jsx
 import React, { useState } from 'react';
 import { X, Eye, EyeOff, UserPlus, Loader2 } from 'lucide-react';
-import { useCreateTeacherMutation } from '../services/api/teachers.api';
-import Modal from './Modal';
-import GradeDropdownFilter from './GradeDropdownFilter';
+import { useCreateTeacherMutation } from '../../services/api/teachers.api';
+import Modal from '../Modal';
+import GradeDropdownFilter from '../filter/GradeDropdownFilter';
 
 const GRADES = [
   { value: 1, label: 'Kelas 1' },

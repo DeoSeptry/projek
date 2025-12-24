@@ -1,9 +1,9 @@
 // src/components/ParentsTable/ParentsTable.jsx
 import React from 'react';
 import { Edit2, Trash2 } from 'lucide-react';
-import SearchBar from '../table/SearchBar';
-import BaseTable from '../table/BaseTable';
-import Pagination from '../Pagination';
+import SearchBar from './SearchBar';
+import BaseTable from './BaseTable';
+import Pagination from './Pagination';
 
 
 export default function ParentsTable({

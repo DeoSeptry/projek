@@ -6,8 +6,8 @@ import TransaksiKepsek from "../pages/KepSek/TransaksiKepsek";
 import HomeWalkel from "../pages/waliKelas/HomeWalkel";
 import TransaksiWalkel from "../pages/waliKelas/TransaksiWalkel";
 
-import HomeWalmur from "../pages/WaliMurid/HOME-WALMUR";
-import TransaksiWalmur from "../pages/WaliMurid/TRANSAKSI-WALMUR";
+import HomeWalmur from "../pages/WaliMurid/HomeWalmur";
+import TransaksiWalmur from "../pages/WaliMurid/TransaksiWalmur";
 
 import DashboardLayout from "../components/layout/dashboardLayout";
 
