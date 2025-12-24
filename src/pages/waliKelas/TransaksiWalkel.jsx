@@ -3,10 +3,8 @@ import React, { useState, useCallback, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Download } from "lucide-react";
 import toast from "react-hot-toast";
-
 import ArusKeuangan from "../../components/ArusKeuangan";
-import DayRangeFilter from "../../components/DayRangeFilter";
-import TransactionTable from "../../components/TransactionTable";
+import DayRangeFilter from "../../components/filter/DayRangeFilter";
 import EditTransactionModal from "../../components/modal/EditTransactionModal";
 import DeleteTransactionModal from "../../components/modal/DeleteTransactionModal";
 
@@ -18,6 +16,7 @@ import {
 } from "../../services/api/transactions.api";
 import DepositModal from "../../components/modal/DepositModal";
 import { exportTransactionsPdf } from "../../utils/exportTransactionsPdf";
+import TransactionTable from "../../components/table/TransactionTable";
 
 export default function TransaksiWalkel() {
   const { user } = useSelector((state) => state.auth);

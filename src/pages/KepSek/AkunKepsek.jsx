@@ -2,7 +2,7 @@
 import React, { useState, useCallback } from 'react';
 import { UserPlus, Search, Users, RefreshCw } from 'lucide-react';
 import { useGetTeachersQuery } from '../../services/api/teachers.api';
-import CreateTeacherModal from '../../components/CreateTeacherModal';
+import CreateTeacherModal from '../../components/modal/CreateTeacherModal';
 import StudentsManagementPage from '../../components/student/StudentManagementPage';
 
 export default function AkunKepsek() {

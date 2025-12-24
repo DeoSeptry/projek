@@ -31,7 +31,16 @@ export const transactionsApi = baseApi.injectEndpoints({
       }),
       transformResponse: (res) => {
         const parsed = TransactionsListResponseSchema.safeParse(res);
-        if (!parsed.success) return { items: [], meta: null, raw: res };
+        if (!parsed.success) {
+  console.error("Schema validation failed:", parsed.error.issues);
+  
+  // Return raw data tanpa reject
+  return { 
+    items: Array.isArray(res?.data) ? res.data : [], 
+    meta: res?.meta || null, 
+    raw: res 
+  };
+}
         return { items: parsed.data.data, meta: parsed.data.meta ?? null, raw: parsed.data };
       },
       providesTags: (result) => {

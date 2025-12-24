@@ -2,17 +2,14 @@
 import React, { useState, useCallback } from "react";
 import toast from "react-hot-toast";
 import { UserPlus } from "lucide-react";
-
-
-
 import {
   useGetParentsQuery,
   useDeleteParentMutation,
 } from "../../services/api/parents.api";
-import ParentsTable from "../../components/table-parent/ParentsTable";
 import CreateParentModal from "../../components/modal/CreateParentModal";
 import EditParentModal from "../../components/modal/EditParentModal";
 import DeleteParentModal from "../../components/modal/DeleteParentModal";
+import ParentsTable from "../../components/table/ParentsTable";
 
 export default function AkunWalkel() {
   const [filters, setFilters] = useState({
