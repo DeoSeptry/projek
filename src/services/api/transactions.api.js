@@ -10,6 +10,7 @@ import {
   TransactionUpdateAmountSchema,
   TransactionDepositSchema,
   TransactionWithdrawSchema,
+  TransactionApproveWithdrawSchema,
 } from "../../schemas/transactions/transactions.schema";
 
 function chartTagId(params) {
@@ -32,15 +33,15 @@ export const transactionsApi = baseApi.injectEndpoints({
       transformResponse: (res) => {
         const parsed = TransactionsListResponseSchema.safeParse(res);
         if (!parsed.success) {
-  console.error("Schema validation failed:", parsed.error.issues);
-  
-  // Return raw data tanpa reject
-  return { 
-    items: Array.isArray(res?.data) ? res.data : [], 
-    meta: res?.meta || null, 
-    raw: res 
-  };
-}
+          console.error("Schema validation failed:", parsed.error.issues);
+          
+          // Return raw data tanpa reject
+          return { 
+            items: Array.isArray(res?.data) ? res.data : [], 
+            meta: res?.meta || null, 
+            raw: res 
+          };
+        }
         return { items: parsed.data.data, meta: parsed.data.meta ?? null, raw: parsed.data };
       },
       providesTags: (result) => {
@@ -184,19 +185,32 @@ export const transactionsApi = baseApi.injectEndpoints({
     }),
 
     /**
-     * PATCH /transactions/withdraw/:transactionId  (approve)
+     * POST /transactions/withdraw/approve (body: { transactionId })
+     * ✅ Menggunakan POST dengan body berisi transactionId
      */
-    approveWithdraw: builder.mutation({
-      query: (transactionId) => ({
-        url: ENDPOINTS.TRANSACTIONS.APPROVE_WITHDRAW(transactionId),
-        method: "PATCH",
-      }),
-      invalidatesTags: (r, e, id) => [
-        { type: "Transactions", id: "LIST" },
-        { type: "Transactions", id: "TOTAL_AMOUNTS" },
-        { type: "Transactions", id },
-      ],
-    }),
+approveWithdraw: builder.mutation({
+  query: (transactionIds) => {
+    // Normalize input: terima string (single) atau array
+    const ids = Array.isArray(transactionIds) ? transactionIds : [transactionIds];
+    
+    const parsed = TransactionApproveWithdrawSchema.safeParse({ transactionIds: ids });
+    if (!parsed.success) throw new Error(parsed.error.issues?.[0]?.message || "Payload tidak valid");
+
+    return {
+      url: ENDPOINTS.TRANSACTIONS.APPROVE_WITHDRAW,
+      method: "POST",
+      body: parsed.data,
+    };
+  },
+  invalidatesTags: (r, e, transactionIds) => {
+    const ids = Array.isArray(transactionIds) ? transactionIds : [transactionIds];
+    return [
+      { type: "Transactions", id: "LIST" },
+      { type: "Transactions", id: "TOTAL_AMOUNTS" },
+      ...ids.map(id => ({ type: "Transactions", id })),
+    ];
+  },
+}),
   }),
   overrideExisting: false,
 });

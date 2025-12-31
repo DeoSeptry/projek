@@ -14,7 +14,7 @@ export const ENDPOINTS = {
     DELETE: (transactionId) => `/transactions/${transactionId}`,
     DEPOSIT: "/transactions/deposit",
     WITHDRAW: "/transactions/withdraw",
-    APPROVE_WITHDRAW: (transactionId) => `/transactions/withdraw/${transactionId}`,
+    APPROVE_WITHDRAW: "/transactions/withdraw/approve",
   },
 
   STUDENT: {
