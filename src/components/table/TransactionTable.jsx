@@ -1,6 +1,6 @@
-// src/components/TransactionTable/TransactionTable.jsx
+// src/components/table/TransactionTable.jsx
 import React from 'react';
-import { Edit2, Trash2 } from 'lucide-react';
+import { Edit2, Trash2, CheckCircle } from 'lucide-react';
 import SearchBar from './SearchBar';
 import BaseTable from './BaseTable';
 import { formatBalance, formatCurrency, formatDate } from '../../utils/formatters';
@@ -18,7 +18,7 @@ export default function TransactionTable({
   totalResults = 0,
   showSearch = true,
   showPagination = true,
-  showActions = false, // Toggle untuk show/hide actions column
+  showActions = false,
   onEdit,
   onDelete,
 }) {
@@ -32,7 +32,7 @@ export default function TransactionTable({
     return type === 'DEPOSIT' ? 'Setoran' : 'Penarikan';
   };
 
- const getStatusColor = (status) => {
+  const getStatusColor = (status) => {
     const statusUpper = status?.toUpperCase();
     switch (statusUpper) {
       case 'SUCCESS':
@@ -46,9 +46,11 @@ export default function TransactionTable({
     }
   };
 
+  // Helper untuk cek apakah pending withdrawal
+  const isPendingWithdrawal = (row) => {
+    return row.type === 'WITHDRAWAL' && row.status === 'PENDING';
+  };
 
-
-  // Base columns
   const baseColumns = [
     { header: 'Nama' },
     { header: 'Kelas' },
@@ -59,7 +61,6 @@ export default function TransactionTable({
     { header: 'Status' },
   ];
 
-  // Add Actions column if needed
   const columns = showActions 
     ? [...baseColumns, { header: 'Aksi' }]
     : baseColumns;
@@ -92,14 +93,33 @@ export default function TransactionTable({
         <td className="px-6 py-4">
           <div className="flex items-center justify-center gap-2">
             {onEdit && (
-              <button
-                onClick={() => onEdit(row)}
-                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                title="Edit Nominal"
-              >
-                <Edit2 className="w-4 h-4" />
-              </button>
+              <div className="relative">
+                {/* Badge untuk pending withdrawal */}
+                {isPendingWithdrawal(row) && (
+                  <span className="absolute top-0 -right-1 flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+                  </span>
+                )}
+                
+                <button
+                  onClick={() => onEdit(row)}
+                  className={`p-2 rounded-lg transition-colors ${
+                    isPendingWithdrawal(row)
+                      ? 'text-amber-600 hover:bg-amber-50'
+                      : 'text-blue-600 hover:bg-blue-50'
+                  }`}
+                  title={isPendingWithdrawal(row) ? 'Approve Penarikan' : 'Edit Nominal'}
+                >
+                  {isPendingWithdrawal(row) ? (
+                    <CheckCircle className="w-4 h-4" />
+                  ) : (
+                    <Edit2 className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
             )}
+            
             {onDelete && (
               <button
                 onClick={() => onDelete(row)}
@@ -117,7 +137,6 @@ export default function TransactionTable({
 
   return (
     <div className="space-y-4">
-      {/* Search Bar - Optional */}
       {showSearch && onSearchChange && (
         <SearchBar
           value={searchQuery}
@@ -126,7 +145,6 @@ export default function TransactionTable({
         />
       )}
 
-      {/* Table */}
       <BaseTable
         columns={columns}
         data={data}
@@ -137,7 +155,6 @@ export default function TransactionTable({
         errorMessage="Gagal memuat data transaksi"
       />
 
-      {/* Pagination - Optional */}
       {showPagination && totalPages > 0 && (
         <div className="flex justify-end">
           <Pagination

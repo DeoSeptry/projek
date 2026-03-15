@@ -78,3 +78,9 @@ export const TransactionWithdrawSchema = z.object({
   amount: z.coerce.number().positive("Amount harus > 0"),
   reason: requiredTrimmed("Alasan wajib diisi."),
 });
+
+/** Approve Withdraw - bisa single atau batch */
+export const TransactionApproveWithdrawSchema = z.object({
+  transactionIds: z.array(z.string().min(1, "transactionId tidak boleh kosong"))
+    .min(1, "Minimal harus ada 1 transaksi yang di-approve"),
+});

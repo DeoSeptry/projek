@@ -1,160 +1,128 @@
-import React from 'react';
+import React from "react";
 
 export default function StudentsTableView({
   students = [],
-  isLoading,
-  selectedIds = [],
-  isAllSelected,
-  isSomeSelected,
+  selectedIds = new Set(),
+
+  isAllSelected = false,
+  isSomeSelected = false,
   onSelectAll,
   onSelectOne,
+
+  // ✅ action footer
+  selectedCount = 0,
+  onPromoteClick,
+  onGraduateClick,
+  isActionLoading = false,
 }) {
-  const formatDate = (isoString) => {
-    return new Date(isoString).toLocaleDateString('id-ID', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    });
-  };
-
-  if (isLoading) {
-    return (
-      <div className="relative overflow-x-auto bg-white shadow-sm rounded-lg border border-gray-200">
-        <div className="p-8 text-center">
-          <div className="inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-          <p className="mt-2 text-sm text-gray-500">Memuat data...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (students.length === 0) {
-    return (
-      <div className="relative overflow-x-auto bg-white shadow-sm rounded-lg border border-gray-200">
-        <div className="p-8 text-center">
-          <p className="text-gray-500">Tidak ada data siswa</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="relative overflow-x-auto bg-white shadow-sm rounded-lg border border-gray-200">
+    <div className="relative overflow-x-auto bg-white rounded-lg shadow">
       <table className="w-full text-sm text-left text-gray-700">
-        <thead className="text-sm text-gray-700 bg-gray-50 border-b border-gray-200">
+        {/* ✅ Atas: hanya nama kolom */}
+        <thead className="text-xs text-gray-600 uppercase bg-gray-50">
           <tr>
-            <th scope="col" className="p-4">
-              <div className="flex items-center">
-                <input
-                  id="table-checkbox-all"
-                  type="checkbox"
-                  checked={isAllSelected}
-                  ref={(el) => {
-                    if (el) el.indeterminate = isSomeSelected;
-                  }}
-                  onChange={(e) => onSelectAll(e.target.checked)}
-                  className="w-4 h-4 border border-gray-300 rounded bg-white focus:ring-2 focus:ring-blue-500"
-                />
-                <label htmlFor="table-checkbox-all" className="sr-only">
-                  Select all
-                </label>
-              </div>
-            </th>
-            <th scope="col" className="px-6 py-3 font-medium">
-              Nama Siswa
-            </th>
-            <th scope="col" className="px-6 py-3 font-medium">
-              Wali Kelas
-            </th>
-            <th scope="col" className="px-6 py-3 font-medium">
-              Kelas
-            </th>
-            <th scope="col" className="px-6 py-3 font-medium">
-              No. Telepon
-            </th>
-            <th scope="col" className="px-6 py-3 font-medium">
-              Status
-            </th>
-            <th scope="col" className="px-6 py-3 font-medium">
-              Tgl Bergabung
-            </th>
+            <th scope="col" className="p-4 w-[56px]" />
+            <th scope="col" className="px-6 py-3">Nama Siswa</th>
+            <th scope="col" className="px-6 py-3">Nama Wali</th>
+            <th scope="col" className="px-6 py-3">Kelas</th>
+            <th scope="col" className="px-6 py-3">No HP</th>
           </tr>
         </thead>
-        <tbody>
-          {students.map((student) => {
-            const isSelected = selectedIds.includes(student.id);
 
-            return (
-              <tr
-                key={student.id}
-                className="bg-white border-b border-gray-200 hover:bg-gray-50"
-              >
-                <td className="w-4 p-4">
-                  <div className="flex items-center">
-                    <input
-                      id={`checkbox-${student.id}`}
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={(e) =>
-                        onSelectOne(student.id, e.target.checked)
-                      }
-                      className="w-4 h-4 border border-gray-300 rounded bg-white focus:ring-2 focus:ring-blue-500"
-                    />
-                    <label htmlFor={`checkbox-${student.id}`} className="sr-only">
-                      Select student
-                    </label>
-                  </div>
-                </td>
-                <th
-                  scope="row"
-                  className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
+        <tbody>
+          {students.length === 0 ? (
+            <tr>
+              <td colSpan={5} className="px-6 py-10 text-center text-gray-500">
+                Tidak ada data siswa
+              </td>
+            </tr>
+          ) : (
+            students.map((student) => {
+              const id = student.id;
+              const checked = selectedIds?.has?.(id) ?? false;
+
+              return (
+                <tr
+                  key={id}
+                  className="bg-white border-b border-gray-200 hover:bg-gray-50"
                 >
-                  {student.studentName}
-                </th>
-                <td className="px-6 py-4">{student.teacherName}</td>
-                <td className="px-6 py-4">
-                  <span className="inline-flex px-2.5 py-0.5 text-xs font-medium">
-                    Kelas {student.grade}
-                  </span>
-                </td>
-                <td className="px-6 py-4">{student.phoneNumber}</td>
-                <td className="px-6 py-4">
-                  {student.isGraduated ? (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      Lulus
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                      Aktif
-                    </span>
-                  )}
-                </td>
-                <td className="px-6 py-4 text-gray-500">
-                  {formatDate(student.createdAt)}
-                </td>
-                
-              </tr>
-            );
-          })}
-          <th scope="col" className="p-4">
+                  <td className="p-4">
+                    <div className="flex items-center">
+                      <input
+                        id={`table-checkbox-${id}`}
+                        type="checkbox"
+                        checked={checked}
+                        onChange={(e) => onSelectOne?.(id, e.target.checked)}
+                        className="w-4 h-4 border border-gray-300 rounded bg-white focus:ring-2 focus:ring-blue-500"
+                      />
+                      <label htmlFor={`table-checkbox-${id}`} className="sr-only">
+                        Select row
+                      </label>
+                    </div>
+                  </td>
+
+                  <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                    {student.studentName ?? "-"}
+                  </td>
+                  <td className="px-6 py-4">{student.teacherName ?? "-"}</td>
+                  <td className="px-6 py-4">{student.grade ?? "-"}</td>
+                  <td className="px-6 py-4">{student.phoneNumber ?? "-"}</td>
+                </tr>
+              );
+            })
+          )}
+        </tbody>
+
+        {/* ✅ Footer: checkbox pilih semua + tombol action sebaris */}
+        <tfoot className="bg-gray-50 border-t border-gray-200">
+          <tr>
+            <td className="p-4 align-middle">
               <div className="flex items-center">
                 <input
-                  id="table-checkbox-all"
+                  id="table-checkbox-all-bottom"
                   type="checkbox"
                   checked={isAllSelected}
                   ref={(el) => {
                     if (el) el.indeterminate = isSomeSelected;
                   }}
-                  onChange={(e) => onSelectAll(e.target.checked)}
+                  onChange={(e) => onSelectAll?.(e.target.checked)}
                   className="w-4 h-4 border border-gray-300 rounded bg-white focus:ring-2 focus:ring-blue-500"
                 />
-                <label htmlFor="table-checkbox-all" className="sr-only">
+                <label htmlFor="table-checkbox-all-bottom" className="sr-only">
                   Select all
                 </label>
               </div>
-              <div>cek ah</div>
-            </th>
-        </tbody>
+            </td>
+
+            <td colSpan={4} className="px-6 py-3">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <span className="text-sm text-gray-600">
+                  Pilih Semua
+                </span>
+
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={onPromoteClick}
+                    disabled={selectedCount === 0 || isActionLoading}
+                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Naik Kelas ({selectedCount})
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={onGraduateClick}
+                    disabled={selectedCount === 0 || isActionLoading}
+                    className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Luluskan ({selectedCount})
+                  </button>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tfoot>
       </table>
     </div>
   );

@@ -7,11 +7,13 @@ import ArusKeuangan from "../../components/ArusKeuangan";
 import DayRangeFilter from "../../components/filter/DayRangeFilter";
 import EditTransactionModal from "../../components/modal/EditTransactionModal";
 import DeleteTransactionModal from "../../components/modal/DeleteTransactionModal";
+import ApproveWithdrawModal from "../../components/modal/ApproveWithdrawModal";
 
 import {
   useGetTransactionsQuery,
   useUpdateTransactionAmountMutation,
   useDeleteTransactionMutation,
+  useApproveWithdrawMutation,
   useLazyGetTransactionsQuery,
 } from "../../services/api/transactions.api";
 import DepositModal from "../../components/modal/DepositModal";
@@ -38,6 +40,10 @@ export default function TransaksiWalkel() {
     transaction: null,
   });
   const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    transaction: null,
+  });
+  const [approveModal, setApproveModal] = useState({
     isOpen: false,
     transaction: null,
   });
@@ -70,6 +76,8 @@ export default function TransaksiWalkel() {
     useUpdateTransactionAmountMutation();
   const [deleteTransaction, { isLoading: isDeleting }] =
     useDeleteTransactionMutation();
+  const [approveWithdraw, { isLoading: isApproving }] =
+    useApproveWithdrawMutation();
   const [triggerGetTransactions] = useLazyGetTransactionsQuery();
 
   const handleDownload = useCallback(async () => {
@@ -79,14 +87,12 @@ export default function TransaksiWalkel() {
     setIsDownloading(true);
 
     try {
-      // ✅ ambil semua data sesuai filter saat ini (dayRange + debouncedSearch)
       const baseParams = {
         ...(filters.dayRange ? { dayRange: filters.dayRange } : {}),
         ...(debouncedSearch ? { search: debouncedSearch } : {}),
       };
       const EXPORT_LIMIT = 100;
 
-      // page 1
       const first = await triggerGetTransactions({
         ...baseParams,
         page: 1,
@@ -99,7 +105,6 @@ export default function TransaksiWalkel() {
 
       let allItems = [...items1];
 
-      // page 2..n
       for (let p = 2; p <= totalPages; p++) {
         const next = await triggerGetTransactions({
           ...baseParams,
@@ -110,7 +115,6 @@ export default function TransaksiWalkel() {
         allItems = allItems.concat(next?.items ?? []);
       }
 
-      // ✅ generate PDF
       const subtitleParts = [];
       if (filters.dayRange)
         subtitleParts.push(`Range: ${filters.dayRange} hari`);
@@ -145,9 +149,6 @@ export default function TransaksiWalkel() {
   const transactions = response?.items || [];
   const meta = response?.meta || {};
 
-  const download = {
-    nominal: "Rp 20.000",
-  };
 
   // Handlers
   const handleDayRangeChange = useCallback((dayRange) => {
@@ -162,15 +163,26 @@ export default function TransaksiWalkel() {
     setFilters((prev) => ({ ...prev, page }));
   }, []);
 
-  // Edit handlers
+  // Edit/Approve handlers
   const handleEditClick = (transaction) => {
-    setEditModal({ isOpen: true, transaction });
+    // Cek apakah transaksi adalah WITHDRAWAL dengan status PENDING
+    const isPendingWithdrawal = 
+      transaction.type === 'WITHDRAWAL' && 
+      transaction.status === 'PENDING';
+
+    if (isPendingWithdrawal) {
+      // Buka modal approve
+      setApproveModal({ isOpen: true, transaction });
+    } else {
+      // Buka modal edit biasa
+      setEditModal({ isOpen: true, transaction });
+    }
   };
 
   const handleEditSubmit = async ({ transactionId, amount }) => {
     try {
       await updateAmount({ transactionId, amount }).unwrap();
-      toast.success("✅ Nominal transaksi berhasil diperbarui", {
+      toast.success(" Nominal transaksi berhasil diperbarui", {
         duration: 3000,
       });
       setEditModal({ isOpen: false, transaction: null });
@@ -190,6 +202,34 @@ export default function TransaksiWalkel() {
     }
   };
 
+  // Approve handlers
+  const handleApproveConfirm = async (transactionId) => {
+    const loadingToast = toast.loading("Memproses approval...");
+    try {
+      // ✅ Kirim transactionId sebagai parameter
+      // Mutation akan membungkusnya dalam body: { transactionId }
+      await approveWithdraw(transactionId).unwrap();
+      toast.dismiss(loadingToast);
+      toast.success("Penarikan berhasil di-approve", {
+        duration: 3000,
+      });
+      setApproveModal({ isOpen: false, transaction: null });
+    } catch (error) {
+      toast.dismiss(loadingToast);
+      const errorMessage = error?.data?.message || "Gagal approve penarikan";
+      toast.error(` ${errorMessage}`, {
+        duration: 4000,
+      });
+      console.error("Approve error:", error);
+    }
+  };
+
+  const handleApproveClose = () => {
+    if (!isApproving) {
+      setApproveModal({ isOpen: false, transaction: null });
+    }
+  };
+
   // Delete handlers
   const handleDeleteClick = (transaction) => {
     setDeleteModal({ isOpen: true, transaction });
@@ -200,14 +240,14 @@ export default function TransaksiWalkel() {
     try {
       await deleteTransaction(transactionId).unwrap();
       toast.dismiss(loadingToast);
-      toast.success("✅ Transaksi berhasil dihapus", {
+      toast.success("Transaksi berhasil dihapus", {
         duration: 3000,
       });
       setDeleteModal({ isOpen: false, transaction: null });
     } catch (error) {
       toast.dismiss(loadingToast);
       const errorMessage = error?.data?.message || "Gagal menghapus transaksi";
-      toast.error(`❌ ${errorMessage}`, {
+      toast.error(` ${errorMessage}`, {
         duration: 4000,
       });
       console.error("Delete error:", error);
@@ -232,7 +272,6 @@ export default function TransaksiWalkel() {
 
       {/* Main Content Card - Transaksi */}
       <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
-        {/* Header dengan tombol tambah transaksi dan filter */}
         <div className="flex flex-col gap-4 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -244,7 +283,6 @@ export default function TransaksiWalkel() {
               </p>
             </div>
 
-            {/* Action Buttons */}
             <div className="flex flex-wrap items-center gap-3">
               <DayRangeFilter
                 value={filters.dayRange}
@@ -252,14 +290,12 @@ export default function TransaksiWalkel() {
               />
               <button
                 onClick={() => setDepositModal(true)}
-                className="rounded-2xl text-[16px] bg-[#1814F3] text-white py-2.5 px-6 font-medium hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-              >
+               className="inline-flex items-center justify-center text-white bg-blue-600 border border-transparent hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 shadow-sm font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none transition-colors ">
                 + Tambah Transaksi
               </button>
             </div>
           </div>
 
-          {/* Active Filters Info */}
           {(filters.dayRange || debouncedSearch) && (
             <div className="flex flex-wrap items-center gap-2 text-sm">
               <span className="text-gray-600">Filter aktif:</span>
@@ -325,7 +361,6 @@ export default function TransaksiWalkel() {
           )}
         </div>
 
-        {/* Transaction Table */}
         <TransactionTable
           data={transactions}
           isLoading={isLoading || isFetching}
@@ -343,6 +378,7 @@ export default function TransaksiWalkel() {
           onDelete={handleDeleteClick}
         />
       </div>
+
       <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
         <div className="flex justify-between items-center max-md:flex-col max-md:gap-4">
           <div className="flex flex-col gap-1">
@@ -356,8 +392,7 @@ export default function TransaksiWalkel() {
           <button
             onClick={handleDownload}
             disabled={isDownloading}
-            className={`rounded-2xl text-[16px] bg-[#1814F3] text-white py-2.5 px-6 font-medium hover:bg-blue-700 transition-colors
-          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center gap-2
+            className={`inline-flex items-center justify-center text-white bg-blue-600 border border-transparent hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 shadow-sm font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none transition-colors gap-2
           ${isDownloading ? "opacity-70 cursor-not-allowed" : ""}`}
           >
             <Download size={18} />
@@ -366,21 +401,6 @@ export default function TransaksiWalkel() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl p-6 shadow-sm">
-        <div className="flex justify-between items-center max-md:flex-col max-md:gap-4">
-          <div className="flex flex-col gap-1 flex-1">
-            <h2 className="text-[18px] text-[#343C6A] font-semibold">
-              Permintaan Penarikan Tabungan
-            </h2>
-            <p className="text-[14px] text-[#718EBF] max-md:hidden">
-              Informasi mengenai pengajuan penarikan tabungan
-            </p>
-          </div>
-          <div className="bg-blue-50 rounded-2xl text-[18px] text-[#1814F3] px-6 py-3 font-semibold border-2 border-blue-100">
-            {download.nominal}
-          </div>
-        </div>
-      </div>
 
       {/* Modals */}
       <DepositModal
@@ -394,6 +414,14 @@ export default function TransaksiWalkel() {
         transaction={editModal.transaction}
         onSubmit={handleEditSubmit}
         isLoading={isUpdating}
+      />
+
+      <ApproveWithdrawModal
+        isOpen={approveModal.isOpen}
+        onClose={handleApproveClose}
+        transaction={approveModal.transaction}
+        onConfirm={handleApproveConfirm}
+        isLoading={isApproving}
       />
 
       <DeleteTransactionModal

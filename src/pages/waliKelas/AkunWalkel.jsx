@@ -130,7 +130,7 @@ export default function AkunWalkel() {
           </div>
           <button
             onClick={() => setCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition"
+            className="inline-flex items-center justify-center text-white bg-blue-600 border border-transparent hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 shadow-sm font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none transition-colors gap-2"
           >
             <UserPlus className="w-5 h-5" />
             Tambah Akun

@@ -1,27 +1,73 @@
 // src/components/modal/WithdrawModal.jsx
 import React from 'react';
-import { X, AlertCircle } from 'lucide-react';
+import { X, AlertCircle, Wallet, CheckCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useWithdrawForm } from '../../hooks/transactions/useWithdrawForm';
+import { useGetTransactionTotalAmountsQuery } from '../../services/api/transactions.api';
+
+function formatIDR(value) {
+  const numericValue = Number(value || 0);
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0,
+  }).format(numericValue);
+}
 
 export default function WithdrawModal({
   isOpen,
   onClose,
   onSuccess,
-  saldoInfo = {
-    saldoTersedia: 0,
-    batasMinimal: 0,
-    maxPenarikan: 0
-  }
 }) {
-  const { register, formState: { errors }, onSubmit, isLoading, rootErrorMessage } = 
-    useWithdrawForm({
-      onSuccess: (res) => {
-        onSuccess?.(res);
-        onClose();
-      },
-    });
+  // Fetch saldo dari API yang sama dengan ArusKeuangan
+  const { 
+    data: totals, 
+    isLoading: isLoadingBalance 
+  } = useGetTransactionTotalAmountsQuery();
+
+  const { 
+    register, 
+    formState: { errors }, 
+    onSubmit: handleFormSubmit, 
+    isLoading, 
+    rootErrorMessage 
+  } = useWithdrawForm({
+    onSuccess: (res) => { 
+      // Toast sukses
+       toast.success("Pengajuan Penarikan Berhasil!", {
+        duration: 3000,
+      });
+      onSuccess?.(res);
+      onClose();
+    },
+    onError: (error) => {
+      // Toast error dengan detail pesan dari backend
+      const errorMessage = 
+        error?.data?.message || 
+        error?.message || 
+        'Gagal mengajukan penarikan';
+      toast.error(` ${errorMessage}`, {
+        duration: 4000,
+      });
+    }
+  });
+
+  // Wrap onSubmit untuk menampilkan loading toast
+  const onSubmit = async (data) => {
+    const loadingToast = toast.loading('Memproses pengajuan penarikan...');
+    
+    try {
+      await handleFormSubmit(data);
+      toast.dismiss(loadingToast);
+    } catch (error) {
+      toast.dismiss(loadingToast);
+      // Error sudah di-handle di onError callback
+    }
+  };
 
   if (!isOpen) return null;
+
+  const saldoTersedia = totals?.totalBalances ?? 0;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -49,25 +95,22 @@ export default function WithdrawModal({
           </div>
 
           {/* Info Saldo */}
-          <div className="mb-6 p-4 bg-blue-50 rounded-xl border border-blue-100">
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Saldo Tersedia:</span>
-                <span className="text-sm font-semibold text-gray-900">
-                  Rp {saldoInfo.saldoTersedia?.toLocaleString('id-ID') || '0'}
-                </span>
+          <div className="mb-6 p-5 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border-2 border-blue-200">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm">
+                <Wallet className="w-6 h-6 text-blue-600" />
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Batas Minimal:</span>
-                <span className="text-sm font-semibold text-gray-900">
-                  Rp {saldoInfo.batasMinimal?.toLocaleString('id-ID') || '0'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Max Penarikan:</span>
-                <span className="text-sm font-semibold text-gray-900">
-                  Rp {saldoInfo.maxPenarikan?.toLocaleString('id-ID') || '0'}
-                </span>
+              <div className="flex-1">
+                <p className="text-sm text-blue-700 font-medium mb-1">
+                  Saldo Tersedia
+                </p>
+                <p className="text-2xl font-bold text-blue-900">
+                  {isLoadingBalance ? (
+                    <span className="text-base">Memuat...</span>
+                  ) : (
+                    formatIDR(saldoTersedia)
+                  )}
+                </p>
               </div>
             </div>
           </div>
@@ -88,25 +131,22 @@ export default function WithdrawModal({
                 Jumlah Penarikan <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">
                   Rp
                 </span>
                 <input
                   type="number"
                   {...register('amount')}
-                  className={`w-full pl-12 pr-4 py-3 border text-black rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  className={`w-full pl-12 pr-4 py-3 border text-black rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition ${
                     errors.amount ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="0"
-                  disabled={isLoading}
+                  disabled={isLoading || isLoadingBalance}
                 />
               </div>
               {errors.amount && (
                 <p className="mt-1 text-sm text-red-600">{errors.amount.message}</p>
               )}
-              <p className="mt-1 text-xs text-gray-500">
-                Maksimal: Rp {saldoInfo.maxPenarikan?.toLocaleString('id-ID') || '0'}
-              </p>
             </div>
 
             {/* Reason */}
@@ -116,11 +156,11 @@ export default function WithdrawModal({
               </label>
               <textarea
                 {...register('reason')}
-                rows={3}
-                className={`w-full px-4 py-3 border text-black rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none ${
+                rows={4}
+                className={`w-full px-4 py-3 border text-black rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none transition ${
                   errors.reason ? 'border-red-500' : 'border-gray-300'
                 }`}
-                placeholder="Masukkan alasan penarikan"
+                placeholder="Contoh: Keperluan bayar SPP, biaya sekolah, dll."
                 disabled={isLoading}
               />
               {errors.reason && (
@@ -129,15 +169,24 @@ export default function WithdrawModal({
             </div>
 
             {/* Info Note */}
-            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-xs text-yellow-800">
-                <strong>Catatan:</strong> Penarikan tunai membutuhkan waktu proses 1-2 hari kerja. 
-                Dana akan dikirim ke rekening yang terdaftar.
-              </p>
+            <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+              <div className="flex gap-2">
+                <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-amber-900 mb-1">
+                    Catatan Penting:
+                  </p>
+                  <ul className="text-xs text-amber-800 space-y-1">
+                    <li>• Penarikan akan diproses dalam 1-2 hari kerja</li>
+                    <li>• Pastikan alasan penarikan jelas dan valid</li>
+                    <li>• Dana akan dikembalikan sesuai prosedur sekolah</li>
+                  </ul>
+                </div>
+              </div>
             </div>
 
             {/* Actions */}
-            <div className="flex gap-3 pt-4">
+            <div className="flex gap-3 pt-2">
               <button
                 type="button"
                 onClick={onClose}
@@ -149,7 +198,7 @@ export default function WithdrawModal({
               <button
                 type="submit"
                 className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition disabled:bg-blue-400 disabled:cursor-not-allowed"
-                disabled={isLoading}
+                disabled={isLoading || isLoadingBalance}
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -157,7 +206,7 @@ export default function WithdrawModal({
                     Memproses...
                   </span>
                 ) : (
-                  'Tarik Tunai'
+                  'Ajukan Penarikan'
                 )}
               </button>
             </div>

@@ -1,102 +1,129 @@
-import React, { useState, useEffect } from 'react';
-import { Search } from 'lucide-react';
-import StudentsTableView from './StudentsTableView';
-import TablePagination from './TablePagination';
-import BulkActionModal from './BulkActionModal';
-import { 
-  useGetStudentsQuery, 
-  useGraduateStudentsMutation, 
-  usePromoteStudentsToNextGradeMutation 
-} from '../../services/api/students.api';
+import React, { useState, useEffect } from "react";
+import { Search } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+
+import StudentsTableView from "./StudentsTableView";
+import TablePagination from "./TablePagination";
+import BulkActionModal from "./BulkActionModal";
+import {
+  useGetStudentsQuery,
+  useGraduateStudentsMutation,
+  usePromoteStudentsToNextGradeMutation,
+} from "../../services/api/students.api";
 
 export default function StudentsTable({ teacherId, teacherGrade }) {
-  const [searchQuery, setSearchQuery] = useState('');
+
+  const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
-  const [selectedIds, setSelectedIds] = useState([]);
+
+  // ✅ Set biar tidak ada duplikat
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [modalAction, setModalAction] = useState(null);
-  
+
   const limit = 10;
 
-  // Query students dengan filter teacherId dan grade
   const { data, isLoading, isFetching } = useGetStudentsQuery({
     page,
     limit,
     search: searchQuery || undefined,
     teacherId: teacherId || undefined,
-    grade: teacherGrade || undefined, // ✅ Filter berdasarkan grade
+    grade: teacherGrade || undefined,
   });
 
-  const [promoteStudents, { isLoading: isPromoting }] = usePromoteStudentsToNextGradeMutation();
-  const [graduateStudents, { isLoading: isGraduating }] = useGraduateStudentsMutation();
+  const [promoteStudents, { isLoading: isPromoting }] =
+    usePromoteStudentsToNextGradeMutation();
+  const [graduateStudents, { isLoading: isGraduating }] =
+    useGraduateStudentsMutation();
 
   const students = data?.items || [];
   const meta = data?.meta;
 
-  // Reset selection dan page saat teacher berubah
   useEffect(() => {
-    setSelectedIds([]);
+    setSelectedIds(new Set());
     setPage(1);
-    setSearchQuery('');
-  }, [teacherId]);
+    setSearchQuery("");
+  }, [teacherId, teacherGrade]);
 
-  // Reset selection saat page berubah
   useEffect(() => {
-    setSelectedIds([]);
+    setSelectedIds(new Set());
   }, [page]);
 
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
-    setPage(1); // Reset ke halaman pertama saat search
+    setPage(1);
+    setSelectedIds(new Set());
   };
 
   const handleSelectAll = (checked) => {
-    setSelectedIds(checked ? students.map((s) => s.id) : []);
+    setSelectedIds(() => {
+      if (!checked) return new Set();
+      return new Set(students.map((s) => s.id));
+    });
   };
 
   const handleSelectOne = (id, checked) => {
-    setSelectedIds((prev) =>
-      checked ? [...prev, id] : prev.filter((sid) => sid !== id)
-    );
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
   };
 
+  const selectedCount = selectedIds.size;
+
   const handleOpenModal = (action) => {
-    if (selectedIds.length === 0) {
-      alert('Pilih minimal 1 siswa terlebih dahulu');
+    if (selectedCount === 0) {
+      toast.error("❌ Pilih minimal 1 siswa terlebih dahulu", { duration: 4000 });
       return;
     }
     setModalAction(action);
   };
 
-  const handleCloseModal = () => {
-    setModalAction(null);
-  };
+  const handleCloseModal = () => setModalAction(null);
 
   const handleConfirmAction = async () => {
+    const idsArray = Array.from(selectedIds);
+
+    const loadingToast = toast.loading("Memproses data siswa...");
     try {
-      if (modalAction === 'promote') {
-        await promoteStudents({ studentIds: selectedIds }).unwrap();
-        alert('Siswa berhasil naik kelas!');
-      } else if (modalAction === 'graduate') {
-        await graduateStudents({ studentIds: selectedIds }).unwrap();
-        alert('Siswa berhasil diluluskan!');
+      if (modalAction === "promote") {
+        await promoteStudents({ studentIds: idsArray }).unwrap();
+        toast.dismiss(loadingToast);
+        toast.success("✅ Siswa berhasil naik kelas", { duration: 3000 });
+      } else if (modalAction === "graduate") {
+        await graduateStudents({ studentIds: idsArray }).unwrap();
+        toast.dismiss(loadingToast);
+        toast.success("✅ Siswa berhasil diluluskan", { duration: 3000 });
+      } else {
+        toast.dismiss(loadingToast);
+        toast.error("❌ Aksi tidak dikenal", { duration: 4000 });
+        return;
       }
-      setSelectedIds([]);
+
+      // ✅ tutup modal + reset selection
+      setSelectedIds(new Set());
       setModalAction(null);
+
     } catch (error) {
-      alert(error?.data?.message || 'Terjadi kesalahan');
+      toast.dismiss(loadingToast);
+      toast.error(
+        `❌ ${error?.data?.message || "Terjadi kesalahan saat memproses siswa"}`,
+        { duration: 4000 }
+      );
     }
   };
 
-  const isAllSelected = students.length > 0 && selectedIds.length === students.length;
-  const isSomeSelected = selectedIds.length > 0 && !isAllSelected;
+  const isAllSelected = students.length > 0 && selectedIds.size === students.length;
+  const isSomeSelected = selectedIds.size > 0 && !isAllSelected;
 
   return (
     <div className="space-y-4">
-      {/* Header Section */}
+      {/* Search */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        {/* Search */}
         <div className="relative flex-1 max-w-md">
-          <Search className="text-black absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5"  />
+          <Search className="text-black absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" />
           <input
             type="text"
             value={searchQuery}
@@ -104,26 +131,6 @@ export default function StudentsTable({ teacherId, teacherGrade }) {
             placeholder="Cari nama siswa..."
             className="text-black bg-white w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
           />
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => handleOpenModal('promote')}
-            disabled={selectedIds.length === 0}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            Naik Kelas ({selectedIds.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => handleOpenModal('graduate')}
-            disabled={selectedIds.length === 0}
-            className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            Luluskan ({selectedIds.length})
-          </button>
         </div>
       </div>
 
@@ -136,6 +143,10 @@ export default function StudentsTable({ teacherId, teacherGrade }) {
         isSomeSelected={isSomeSelected}
         onSelectAll={handleSelectAll}
         onSelectOne={handleSelectOne}
+        selectedCount={selectedCount}
+        onPromoteClick={() => handleOpenModal("promote")}
+        onGraduateClick={() => handleOpenModal("graduate")}
+        isActionLoading={isPromoting || isGraduating}
       />
 
       {/* Pagination */}
@@ -147,12 +158,12 @@ export default function StudentsTable({ teacherId, teacherGrade }) {
           onPageChange={setPage}
         />
       )}
-    
+
       {/* Modal */}
       <BulkActionModal
         isOpen={modalAction !== null}
         action={modalAction}
-        selectedCount={selectedIds.length}
+        selectedCount={selectedCount}
         isLoading={isPromoting || isGraduating}
         onConfirm={handleConfirmAction}
         onClose={handleCloseModal}

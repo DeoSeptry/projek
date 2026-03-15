@@ -17,6 +17,12 @@ const nisnValidation = () =>
       .min(1, "NISN wajib diisi.")
       .regex(/^(?!0{10})[0-9]{10}$/, "NISN harus 10 digit angka dan tidak boleh semua nol.")
   );
+export const AvatarSchema = z
+  .object({
+    url: z.string().url(),
+    thumbnailUrl: z.string().url(),
+  })
+  .nullable();
 
 export const ParentItemSchema = z.object({
   id: z.string(),
@@ -27,7 +33,7 @@ export const ParentItemSchema = z.object({
   grade: z.coerce.number(),
   username: z.string(),
   phoneNumber: z.string(),
-  avatar: z.string().nullable().optional(),
+  avatar: AvatarSchema.optional(), // ✅ fixed
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -56,10 +62,6 @@ export const ParentDetailResponseSchema = z.object({
   data: ParentItemSchema,
 });
 
-/**
- * CREATE body:
- * nisn, studentName, parentName, username, password, confirmPassword, phoneNumber
- */
 export const ParentCreateSchema = z
   .object({
     nisn: nisnValidation(),
@@ -75,10 +77,6 @@ export const ParentCreateSchema = z
     message: "Konfirmasi password harus sama.",
   });
 
-/**
- * UPDATE PATCH body:
- * (umumnya sama seperti create, tapi password optional)
- */
 export const ParentUpdateSchema = z.object({
   nisn: nisnValidation(),
   studentName: requiredTrimmed("Nama siswa wajib diisi."),
