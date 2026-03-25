@@ -38,7 +38,7 @@ export const ProfileSchema = z.object({
   id: z.string(),
   username: z.string(),
   name: z.string(),
-  phoneNumber: z.string(),
+  phoneNumber: z.string().nullable().optional(),
   email: z.string().optional(),
   role: z.string(),
   avatar: ProfileAvatarSchema,

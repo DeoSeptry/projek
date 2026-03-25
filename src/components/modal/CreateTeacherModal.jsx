@@ -1,5 +1,6 @@
 // src/components/CreateTeacherModal.jsx
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
 import { X, Eye, EyeOff, UserPlus, Loader2 } from 'lucide-react';
 import { useCreateTeacherMutation } from '../../services/api/teachers.api';
 import Modal from '../Modal';
@@ -93,8 +94,9 @@ export default function CreateTeacherModal({ show, onClose }) {
       setErrors({});
       onClose();
       
-      // Optional: Show success notification
-      alert('Wali Kelas berhasil ditambahkan!');
+      toast.success('✅ Wali Kelas berhasil ditambahkan', {
+        duration: 3000,
+      });
     } catch (error) {
       // Handle API errors
       if (error?.data?.message) {
