@@ -21,31 +21,14 @@ export const authApi = baseApi.injectEndpoints({
           const accessToken = d?.accessToken ?? null;
 
           dispatch(setSession({ user, role, accessToken }));
-          saveAuthUser({ user, role });
+          saveAuthUser({ user, role, accessToken });
         } catch {
         }
       },
       invalidatesTags: [{ type: "Auth", id: "SESSION" }],
     }),
 
-    refreshToken: builder.mutation({
-      query: () => ({
-        url: ENDPOINTS.AUTH.REFRESH,
-        method: "GET",
-      }),
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
-        try {
-          const { data: res } = await queryFulfilled;
-          const accessToken = res?.data?.accessToken ?? null;
-          if (accessToken) dispatch(setSession({ accessToken }));
-        } catch {
-          dispatch(clearSession());
-          clearAuthUser();
-        }
-      },
-      invalidatesTags: [{ type: "Auth", id: "SESSION" }],
-    }),
-
+    
     logout: builder.mutation({
       query: () => ({
         url: ENDPOINTS.AUTH.LOGOUT,
@@ -65,4 +48,4 @@ export const authApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useLoginMutation, useRefreshTokenMutation, useLogoutMutation } = authApi;
+export const { useLoginMutation, useLogoutMutation } = authApi;

@@ -8,6 +8,7 @@ export function saveAuthUser(payload) {
     const data = {
       user: payload.user,
       role: payload.role,
+      accessToken: payload.accessToken ?? null,
       timestamp: Date.now(),
       version: 1
     };
@@ -39,7 +40,11 @@ export function loadAuthUser() {
       return null;
     }
     
-    return { user: data.user, role: data.role };
+    return {
+      user: data.user,
+      role: data.role,
+      accessToken: data.accessToken ?? null,
+    };
   } catch (error) {
     console.error('Failed to load auth:', error);
     clearAuthUser();

@@ -6,6 +6,8 @@ import {
   TransactionsListResponseSchema,
   TransactionDetailResponseSchema,
   TransactionTotalAmountsResponseSchema,
+  TransactionWhatsappReceiptResponseSchema,
+  TransactionWhatsappWithdrawalResponseSchema,
   TransactionsChartResponseSchema,
   TransactionUpdateAmountSchema,
   TransactionDepositSchema,
@@ -50,6 +52,34 @@ export const transactionsApi = baseApi.injectEndpoints({
           { type: "Transactions", id: "LIST" },
           ...items.map((t) => ({ type: "Transactions", id: t.id })),
         ];
+      },
+    }),
+
+    /**
+     * GET /transactions/:id/whatsapp-url/receipt
+     */
+    getTransactionWhatsappReceipt: builder.mutation({
+      query: (transactionId) => ({
+        url: ENDPOINTS.TRANSACTIONS.WHATSAPP_RECEIPT(transactionId),
+        method: "GET",
+      }),
+      transformResponse: (res) => {
+        const parsed = TransactionWhatsappReceiptResponseSchema.safeParse(res);
+        return parsed.success ? parsed.data : res;
+      },
+    }),
+
+    /**
+     * GET /transactions/:id/whatsapp-link/withdrawal-request
+     */
+    getTransactionWhatsappWithdrawalRequest: builder.mutation({
+      query: (transactionId) => ({
+        url: ENDPOINTS.TRANSACTIONS.WHATSAPP_WITHDRAWAL_REQUEST(transactionId),
+        method: "GET",
+      }),
+      transformResponse: (res) => {
+        const parsed = TransactionWhatsappWithdrawalResponseSchema.safeParse(res);
+        return parsed.success ? parsed.data : res;
       },
     }),
 
@@ -227,4 +257,6 @@ export const {
   useDepositTransactionMutation,
   useWithdrawTransactionMutation,
   useApproveWithdrawMutation,
+  useGetTransactionWhatsappReceiptMutation,
+  useGetTransactionWhatsappWithdrawalRequestMutation,
 } = transactionsApi;

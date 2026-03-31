@@ -17,6 +17,23 @@ const nisnValidation = () =>
       .min(1, "NISN wajib diisi.")
       .regex(/^(?!0{10})[0-9]{10}$/, "NISN harus 10 digit angka dan tidak boleh semua nol.")
   );
+
+// Helper untuk nomor HP dengan validasi pattern
+const normalizePhoneNumberInput = (v) => {
+  if (typeof v !== "string") return v;
+  return v.trim().replace(/[\s-]/g, "");
+};
+
+const phoneNumberValidation = () =>
+  z.preprocess(
+    normalizePhoneNumberInput,
+    z.string()
+      .min(1, "Nomor HP wajib diisi.")
+      .regex(
+        /^((\+62)|62|0)8[1-9][0-9]{7,11}$/,
+        "Invalid string: must match pattern /^((\\+62)|62|0)8[1-9][0-9]{7,11}$/"
+      )
+  );
 export const AvatarSchema = z
   .object({
     url: z.string().url(),
@@ -68,7 +85,7 @@ export const ParentCreateSchema = z
     studentName: requiredTrimmed("Nama siswa wajib diisi."),
     parentName: requiredTrimmed("Nama orang tua wajib diisi."),
     username: requiredTrimmed("Username wajib diisi."),
-    phoneNumber: requiredTrimmed("Nomor HP wajib diisi."),
+    phoneNumber: phoneNumberValidation(),
     password: passwordTrimmed("Password wajib diisi.", 6),
     confirmPassword: requiredTrimmed("Konfirmasi password wajib diisi."),
   })
@@ -82,5 +99,5 @@ export const ParentUpdateSchema = z.object({
   studentName: requiredTrimmed("Nama siswa wajib diisi."),
   parentName: requiredTrimmed("Nama orang tua wajib diisi."),
   username: requiredTrimmed("Username wajib diisi."),
-  phoneNumber: requiredTrimmed("Nomor HP wajib diisi."),
+  phoneNumber: phoneNumberValidation(),
 });

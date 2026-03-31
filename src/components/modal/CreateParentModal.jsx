@@ -12,13 +12,47 @@ export default function CreateParentModal({
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const { register, formState: { errors }, onSubmit, isLoading, rootErrorMessage } = 
+  const { register, formState: { errors }, onSubmit, isLoading, rootErrorMessage, setValue, getValues } = 
     useParentCreateForm({
       onSuccess: (res) => {
         onSuccess?.(res);
         onClose();
       },
     });
+
+  const formatPhoneNumber = (value) => {
+    if (typeof value !== 'string') return '';
+    const raw = value.trim();
+    const digits = raw.replace(/[^0-9]/g, '');
+
+    let rest = digits;
+    if (digits.startsWith('62')) {
+      rest = digits.slice(2);
+    } else if (digits.startsWith('0')) {
+      rest = digits.slice(1);
+    }
+
+    const groups = [];
+    if (rest.length > 0) groups.push(rest.slice(0, 3));
+    if (rest.length > 3) groups.push(rest.slice(3, 7));
+    if (rest.length > 7) groups.push(rest.slice(7, 11));
+    if (rest.length > 11) groups.push(rest.slice(11));
+
+    const spaced = groups.filter(Boolean).join(' ');
+    return spaced ? `+62 ${spaced}` : '+62 ';
+  };
+
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const current = getValues('phoneNumber');
+    if (!current) {
+      setValue('phoneNumber', '+62 ', {
+        shouldDirty: false,
+        shouldTouch: false,
+        shouldValidate: false,
+      });
+    }
+  }, [getValues, isOpen, setValue]);
 
   if (!isOpen) return null;
 
@@ -138,12 +172,22 @@ export default function CreateParentModal({
                 No. HP <span className="text-red-500">*</span>
               </label>
               <input
-                type="text"
-                {...register('phoneNumber')}
+                type="tel"
+                inputMode="numeric"
+                {...register('phoneNumber', {
+                  onChange: (event) => {
+                    const masked = formatPhoneNumber(event.target.value);
+                    setValue('phoneNumber', masked, {
+                      shouldDirty: true,
+                      shouldTouch: true,
+                      shouldValidate: true,
+                    });
+                  },
+                })}
                 className={`w-full px-4 py-3 border text-black rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                   errors.phoneNumber ? 'border-red-500' : 'border-gray-300'
                 }`}
-                placeholder="Masukkan nomor HP"
+                placeholder="+62 8xx xxxx xxxx"
                 disabled={isLoading}
               />
               {errors.phoneNumber && (

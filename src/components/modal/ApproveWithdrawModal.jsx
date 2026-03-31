@@ -1,7 +1,11 @@
 // src/components/modal/ApproveWithdrawModal.jsx
 import React from 'react';
 import { X, AlertCircle, CheckCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { formatCurrency } from '../../utils/formatters';
+import { useGetTransactionWhatsappReceiptMutation } from '../../services/api/transactions.api';
+import WhatsappPromptModal from './WhatsappPromptModal';
+import WhatsappSuccessModal from './WhatsappSuccessModal';
 
 export default function ApproveWithdrawModal({
   isOpen,
@@ -10,11 +14,54 @@ export default function ApproveWithdrawModal({
   onConfirm,
   isLoading,
 }) {
-  const handleApprove = () => {
-    if (transaction?.id) {
-      onConfirm(transaction.id);
+  const [isWhatsappPromptOpen, setIsWhatsappPromptOpen] = React.useState(false);
+  const [isWhatsappSuccessOpen, setIsWhatsappSuccessOpen] = React.useState(false);
+  const [getWhatsappReceipt, { isLoading: isWhatsappLoading }] =
+    useGetTransactionWhatsappReceiptMutation();
+
+  const handleApprove = async () => {
+    if (!transaction?.id || isLoading) return;
+    const result = await onConfirm(transaction.id);
+    if (result === false) return;
+    setIsWhatsappPromptOpen(true);
+  };
+
+  const handleWhatsappDecision = async (shouldSend) => {
+    if (!shouldSend) {
+      setIsWhatsappPromptOpen(false);
+      onClose();
+      return;
+    }
+
+    try {
+      const res = await getWhatsappReceipt(transaction.id).unwrap();
+      const link =
+        res?.data?.whatsappLink ||
+        res?.data?.whatsappUrl ||
+        res?.whatsappLink ||
+        res?.whatsappUrl ||
+        '';
+      if (link) {
+        window.open(link, '_blank', 'noopener,noreferrer');
+        setIsWhatsappPromptOpen(false);
+        setIsWhatsappSuccessOpen(true);
+      } else {
+        toast.error('Link WhatsApp tidak tersedia.');
+        onClose();
+      }
+    } catch (error) {
+      console.error('WhatsApp withdrawal error:', error);
+      toast.error('Gagal membuat link WhatsApp.');
+      onClose();
     }
   };
+
+  React.useEffect(() => {
+    if (!isOpen) {
+      setIsWhatsappPromptOpen(false);
+      setIsWhatsappSuccessOpen(false);
+    }
+  }, [isOpen]);
 
   if (!isOpen || !transaction) return null;
 
@@ -23,7 +70,7 @@ export default function ApproveWithdrawModal({
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-gray-900/60 transition-opacity"
-        onClick={isLoading ? undefined : onClose}
+        onClick={isLoading || isWhatsappLoading ? undefined : onClose}
       />
 
       {/* Modal */}
@@ -37,7 +84,7 @@ export default function ApproveWithdrawModal({
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 transition"
-              disabled={isLoading}
+              disabled={isLoading || isWhatsappLoading}
             >
               <X className="w-6 h-6" />
             </button>
@@ -88,12 +135,14 @@ export default function ApproveWithdrawModal({
           </div>
 
           {/* Confirmation Message */}
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-800">
-              <CheckCircle className="w-4 h-4 inline mr-1" />
-              Dengan menyetujui, transaksi penarikan ini akan diproses dan saldo siswa akan berkurang.
-            </p>
-          </div>
+          {!isWhatsappPromptOpen && (
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <CheckCircle className="w-4 h-4 inline mr-1" />
+                Dengan menyetujui, transaksi penarikan ini akan diproses dan saldo siswa akan berkurang.
+              </p>
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex gap-3">
@@ -101,7 +150,7 @@ export default function ApproveWithdrawModal({
               type="button"
               onClick={onClose}
               className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition"
-              disabled={isLoading}
+              disabled={isLoading || isWhatsappLoading}
             >
               Batal
             </button>
@@ -109,9 +158,9 @@ export default function ApproveWithdrawModal({
               type="button"
               onClick={handleApprove}
               className="flex-1 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition disabled:bg-green-400 disabled:cursor-not-allowed"
-              disabled={isLoading}
+              disabled={isLoading || isWhatsappLoading}
             >
-              {isLoading ? (
+              {isLoading || isWhatsappLoading ? (
                 <span className="flex items-center justify-center gap-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   Memproses...
@@ -123,6 +172,26 @@ export default function ApproveWithdrawModal({
           </div>
         </div>
       </div>
+
+      <WhatsappPromptModal
+        isOpen={isWhatsappPromptOpen}
+        title="Kirim Informasi ke WhatsApp"
+        message="Apakah Anda ingin mengirimkan informasi transaksi ke WhatsApp?"
+        helperText="Sistem akan membuat tautan WhatsApp dengan pesan otomatis."
+        confirmText="Ya, Kirim WhatsApp"
+        cancelText="Tidak"
+        onConfirm={() => handleWhatsappDecision(true)}
+        onCancel={() => handleWhatsappDecision(false)}
+        isLoading={isWhatsappLoading}
+      />
+
+      <WhatsappSuccessModal
+        isOpen={isWhatsappSuccessOpen}
+        title="Berhasil Mengirim WhatsApp"
+        message="Tautan WhatsApp sudah dibuka di tab baru."
+        buttonText="Kembali ke Dashboard"
+        onClose={onClose}
+      />
     </div>
   );
 }
