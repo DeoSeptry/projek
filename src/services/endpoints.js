@@ -15,6 +15,9 @@ export const ENDPOINTS = {
     DEPOSIT: "/transactions/deposit",
     WITHDRAW: "/transactions/withdraw",
     APPROVE_WITHDRAW: "/transactions/withdraw/approve",
+    WHATSAPP_RECEIPT: (transactionId) => `/transactions/${transactionId}/whatsapp-url/receipt`,
+    WHATSAPP_WITHDRAWAL_REQUEST: (transactionId) =>
+      `/transactions/${transactionId}/whatsapp-url/withdrawal-request`,
   },
 
   STUDENT: {

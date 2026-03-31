@@ -213,7 +213,7 @@ export default function TransaksiWalkel() {
       toast.success("Penarikan berhasil di-approve", {
         duration: 3000,
       });
-      setApproveModal({ isOpen: false, transaction: null });
+      return true;
     } catch (error) {
       toast.dismiss(loadingToast);
       const errorMessage = error?.data?.message || "Gagal approve penarikan";
@@ -221,6 +221,7 @@ export default function TransaksiWalkel() {
         duration: 4000,
       });
       console.error("Approve error:", error);
+      return false;
     }
   };
 

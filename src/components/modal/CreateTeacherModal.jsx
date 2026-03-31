@@ -21,6 +21,7 @@ export default function CreateTeacherModal({ show, onClose }) {
   const [formData, setFormData] = useState({
     name: '',
     username: '',
+    phoneNumber: '',
     grade: 1,
     password: '',
     confirmPassword: '',
@@ -51,6 +52,10 @@ export default function CreateTeacherModal({ show, onClose }) {
 
     if (!formData.username.trim()) {
       newErrors.username = 'Username wajib diisi';
+    }
+
+    if (!formData.phoneNumber.trim()) {
+      newErrors.phoneNumber = 'Nomor HP wajib diisi';
     }
 
     if (!formData.password) {
@@ -87,6 +92,7 @@ export default function CreateTeacherModal({ show, onClose }) {
       setFormData({
         name: '',
         username: '',
+        phoneNumber: '',
         grade: 1,
         password: '',
         confirmPassword: '',
@@ -112,6 +118,7 @@ export default function CreateTeacherModal({ show, onClose }) {
       setFormData({
         name: '',
         username: '',
+        phoneNumber: '',
         grade: 1,
         password: '',
         confirmPassword: '',
@@ -203,6 +210,28 @@ export default function CreateTeacherModal({ show, onClose }) {
               )}
             </div>
 
+            {/* Phone Number */}
+            <div>
+              <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-2">
+                Nomor HP <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="tel"
+                id="phoneNumber"
+                name="phoneNumber"
+                value={formData.phoneNumber}
+                onChange={handleChange}
+                disabled={isLoading}
+                className={`w-full text-black  px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed ${
+                  errors.phoneNumber ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="Masukkan nomor HP"
+              />
+              {errors.phoneNumber && (
+                <p className="mt-1 text-xs text-red-500">{errors.phoneNumber}</p>
+              )}
+            </div>
+
            {/* Grade */}
 <div>
   <label htmlFor="grade" className="block text-sm font-medium text-gray-700 mb-2">
@@ -244,7 +273,7 @@ export default function CreateTeacherModal({ show, onClose }) {
                   disabled={isLoading}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
                 </button>
               </div>
               {errors.password && (
@@ -276,7 +305,7 @@ export default function CreateTeacherModal({ show, onClose }) {
                   disabled={isLoading}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showConfirmPassword ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
                 </button>
               </div>
               {errors.confirmPassword && (

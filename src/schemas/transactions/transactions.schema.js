@@ -20,7 +20,7 @@ export const TransactionsListResponseSchema = z.object({
   status: z.boolean(),
   code: z.coerce.number(),
   message: z.string(),
-  data: z.array(TransactionItemSchema),
+  data: z.array(TransactionItemSchema).nullable().default([]),
   meta: z
     .object({
       page: z.coerce.number(),
@@ -48,6 +48,26 @@ export const TransactionTotalAmountsResponseSchema = z.object({
     totalDeposits: z.union([z.string(), z.number()]),
     totalWithdrawals: z.union([z.string(), z.number()]),
     totalBalances: z.union([z.string(), z.number()]),
+  }),
+});
+
+export const TransactionWhatsappReceiptResponseSchema = z.object({
+  status: z.boolean(),
+  code: z.coerce.number(),
+  message: z.string(),
+  data: z.object({
+    whatsappLink: z.string().optional(),
+    whatsappUrl: z.string().optional(),
+  }),
+});
+
+export const TransactionWhatsappWithdrawalResponseSchema = z.object({
+  status: z.boolean(),
+  code: z.coerce.number(),
+  message: z.string(),
+  data: z.object({
+    whatsappLink: z.string().optional(),
+    whatsappUrl: z.string().optional(),
   }),
 });
 

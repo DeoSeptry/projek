@@ -6,8 +6,8 @@ const stored = loadAuthUser();
 const initialState = {
   user: stored?.user ?? null,
   role: stored?.role ?? null,
-  accessToken: null,
-  isAuthenticated: false,
+  accessToken: stored?.accessToken ?? null,
+  isAuthenticated: Boolean(stored?.accessToken),
 };
 
 const authSlice = createSlice({
