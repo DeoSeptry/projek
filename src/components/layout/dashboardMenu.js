@@ -23,14 +23,7 @@ export const DASHBOARD_MENU = [
     icon: UserCircle,
     roles: ["superadmin"],
   },
-  {
-    id: "kepsek-pengaturan",
-    path: "/pengaturanKepsek",
-    label: "Pengaturan",
-    icon: Settings,
-    roles: ["superadmin"],
-  },
-
+  
   // TEACHER (Wali Kelas)
   {
     id: "walkel-home",
@@ -44,6 +37,13 @@ export const DASHBOARD_MENU = [
     path: "/transaksiWalkel",
     label: "Transaksi",
     icon: ArrowLeftRight,
+    roles: ["teacher"],
+  },
+  {
+    id: "walkel-akun",
+    path: "/akunWalkel",
+    label: "Akun",
+    icon: UserCircle,
     roles: ["teacher"],
   },
 
@@ -61,5 +61,12 @@ export const DASHBOARD_MENU = [
     label: "Transaksi",
     icon: ArrowLeftRight,
     roles: ["parent"],
+  },
+  {
+    id: "kepsek-pengaturan",
+    path: "/pengaturanKepsek",
+    label: "Pengaturan",
+    icon: Settings,
+    roles: ["superadmin", "teacher", "parent"],
   },
 ];

@@ -5,10 +5,9 @@ import { LogOut, User, X, Menu } from "lucide-react";
 
 import Modal from "../Modal";
 import Logo from "../../assets/logo.png";
+import { useGetProfileQuery } from "../../services/api/profile.api";
 
-
-
-import { normalizeRole } from "../../routes/rolePaths"; // pastikan file ini ada
+import { normalizeRole } from "../../routes/rolePaths";
 import { DASHBOARD_MENU } from "./dashboardMenu";
 import { useLogoutMutation } from "../../services/api/auth.api";
 
@@ -17,6 +16,10 @@ export default function DashboardLayout() {
   const navigate = useNavigate();
 
   const { user, role, isAuthenticated } = useSelector((state) => state.auth);
+  const { data: profileData } = useGetProfileQuery();
+  const profile = profileData;
+
+
   const [logout, { isLoading: isLoggingOut }] = useLogoutMutation();
 
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
@@ -124,19 +127,6 @@ export default function DashboardLayout() {
       </nav>
 
       <div className="p-3 border-t border-gray-100 bg-white flex-shrink-0">
-        <div className="mb-3 flex items-center gap-3">
-          <div className="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-            <User className="w-5 h-5 text-blue-600" />
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">
-              {user?.username || "User"}
-            </p>
-            <p className="text-xs text-gray-500 truncate">{user?.email || "-"}</p>
-          </div>
-        </div>
-
         <button
           type="button"
           onClick={() => setShowLogoutModal(true)}
@@ -151,7 +141,7 @@ export default function DashboardLayout() {
   );
 
   const Navbar = () => (
-    <nav className="bg-white border-b border-gray-100 px-4 md:px-6 py-6 flex items-center justify-between sticky top-0 z-30">
+    <nav className="bg-white border-b border-gray-100 px-4 md:px-6 py-2 flex items-center justify-between sticky top-0 z-30">
       <div className="flex items-center gap-4">
         <button
           type="button"
@@ -166,11 +156,59 @@ export default function DashboardLayout() {
           {activeMenuLabel}
         </h1>
       </div>
+
+      {/* Profile Section - Desktop */}
+      <div className="hidden md:flex items-center gap-3">
+        {/* Avatar & Info */}
+        <button
+          onClick={() => navigate("/dashboard/profile")}
+          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          
+          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200 flex-shrink-0">
+            {profile?.avatar?.url ? (
+              <img
+                src={profile.avatar.url}
+                alt={profile?.name || "Avatar"}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-blue-100 flex items-center justify-center">
+                <User className="w-5 h-5 text-blue-600" />
+              </div>
+            )}
+          </div>
+          <div className="text-left">
+            <p className="text-sm font-medium text-gray-900">
+              { profile?.name || "User"}
+            </p>
+            <p className="text-xs text-gray-500">
+              {profile?.role }
+            </p>
+          </div>
+        </button>
+      </div>
+
+      {/* Profile Section - Mobile (only avatar) */}
+      <button
+        onClick={() => navigate("/dashboard/profile")}
+        className="md:hidden w-10 h-10 rounded-full overflow-hidden border-2 border-gray-200 flex-shrink-0"
+      >
+        {profile?.avatar?.url ? (
+          <img
+            src={profile.avatar.url}
+            alt={profile?.name || "Avatar"}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-blue-100 flex items-center justify-center">
+            <User className="w-5 h-5 text-blue-600" />
+          </div>
+        )}
+      </button>
     </nav>
   );
 
-  // Layout ini harusnya sudah diprotek oleh RequireAuthRole,
-  // tapi fallback aman kalau state belum kebaca saat bootstrap.
   if (!isAuthenticated || !roleNormalized) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -211,9 +249,6 @@ export default function DashboardLayout() {
 
       <Modal show={showLogoutModal} onClose={() => setShowLogoutModal(false)} size="md">
         <div className="text-center">
-          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
-            <LogOut className="h-6 w-6 text-red-600" />
-          </div>
 
           <h3 className="mb-2 text-lg font-semibold text-gray-900">
             Konfirmasi Logout

@@ -1,9 +1,10 @@
 import React from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { normalizeRole, getHomePathByRole } from "./rolePaths";
+import { clearSession } from "../store/authSlice";
+import { clearAuthUser } from "../utils/authStorage";
 
-// Redirect "/" -> home sesuai role, atau login
 export function IndexRedirect() {
   const { role, isAuthenticated } = useSelector((s) => s.auth);
 
@@ -13,7 +14,6 @@ export function IndexRedirect() {
   return <Navigate to={getHomePathByRole(role)} replace />;
 }
 
-// Jika sudah login, tidak boleh ke halaman login
 export function RedirectIfAuthenticated({ children }) {
   const { role, isAuthenticated } = useSelector((s) => s.auth);
 
@@ -23,24 +23,25 @@ export function RedirectIfAuthenticated({ children }) {
   return children;
 }
 
-// Guard auth + role
 export function RequireAuthRole({ allowedRoles, children }) {
   const location = useLocation();
+  const dispatch = useDispatch();
   const { role, isAuthenticated } = useSelector((s) => s.auth);
 
+  // 1. Jika tidak ada access token (isAuthenticated = false)
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // 2. PERBAIKAN: Jika ada token, tapi role-nya hilang/korup, 
+  // bersihkan sesi dan paksa login ulang untuk keamanan.
   if (!role) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <p className="text-gray-500">Loading session...</p>
-      </div>
-    );
+    dispatch(clearSession());
+    clearAuthUser();
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // allowedRoles kosong -> lolos
+  // 3. Cek otorisasi berdasarkan role
   if (!allowedRoles || allowedRoles.length === 0) {
     return children ?? <Outlet />;
   }
