@@ -77,6 +77,7 @@ export default function TransaksiWalmur() {
             onPageChange={handlePageChange}
             showSearch={false}
             showPagination={true}
+            onRefresh={refetch}
           />
         </div>
       </div>

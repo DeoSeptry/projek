@@ -226,22 +226,6 @@ export default function WithdrawModal({
               )}
             </div>
 
-            {/* Info Note */}
-            <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-              <div className="flex gap-2">
-                <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-amber-900 mb-1">
-                    Catatan Penting:
-                  </p>
-                  <ul className="text-xs text-amber-800 space-y-1">
-                    <li>• Penarikan akan diproses dalam 1-2 hari kerja</li>
-                    <li>• Pastikan alasan penarikan jelas dan valid</li>
-                    <li>• Dana akan dikembalikan sesuai prosedur sekolah</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
               </>
             )}
 

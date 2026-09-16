@@ -11,6 +11,7 @@ import {
   useGraduateStudentsMutation,
   usePromoteStudentsToNextGradeMutation,
 } from "../../services/api/students.api";
+import { FINAL_GRADE } from "../../schemas/teacher/teachers.schema";
 
 export default function StudentsTable({ teacherId, teacherGrade }) {
 
@@ -73,9 +74,20 @@ export default function StudentsTable({ teacherId, teacherGrade }) {
 
   const selectedCount = selectedIds.size;
 
+  // Kelas 6 = kelas terakhir: hanya boleh diluluskan, tidak bisa naik kelas lagi
+  const isFinalGrade = Number(teacherGrade) === FINAL_GRADE;
+
   const handleOpenModal = (action) => {
     if (selectedCount === 0) {
       toast.error("❌ Pilih minimal 1 siswa terlebih dahulu", { duration: 4000 });
+      return;
+    }
+    if (action === "promote" && isFinalGrade) {
+      toast.error("❌ Siswa kelas 6 hanya dapat diluluskan", { duration: 4000 });
+      return;
+    }
+    if (action === "graduate" && !isFinalGrade) {
+      toast.error("❌ Hanya siswa kelas 6 yang dapat diluluskan", { duration: 4000 });
       return;
     }
     setModalAction(action);
@@ -147,6 +159,7 @@ export default function StudentsTable({ teacherId, teacherGrade }) {
         onPromoteClick={() => handleOpenModal("promote")}
         onGraduateClick={() => handleOpenModal("graduate")}
         isActionLoading={isPromoting || isGraduating}
+        isFinalGrade={isFinalGrade}
       />
 
       {/* Pagination */}

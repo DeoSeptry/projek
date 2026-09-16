@@ -21,6 +21,7 @@ export default function HomeWalmur() {
     isLoading,
     isError,
     isFetching,
+    refetch,
   } = useGetTransactionsQuery(filters);
 
   const transactions = response?.items || [];
@@ -69,6 +70,7 @@ export default function HomeWalmur() {
           onPageChange={handlePageChange}
           showSearch={false}
           showPagination={true}
+          onRefresh={refetch}
         />
       </div>
     </div>

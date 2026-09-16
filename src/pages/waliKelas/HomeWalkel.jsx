@@ -33,7 +33,7 @@ export default function HomeWalkel() {
   });
 
   // Queries & Mutations
-  const { data: response, isLoading, isError, isFetching } =
+  const { data: response, isLoading, isError, isFetching, refetch } =
     useGetTransactionsQuery(filters);
 
   const [updateAmount, { isLoading: isUpdating }] = useUpdateTransactionAmountMutation();
@@ -152,6 +152,7 @@ export default function HomeWalkel() {
           showActions={true}
           onEdit={handleEditClick}
           onDelete={handleDeleteClick}
+          onRefresh={refetch}
         />
       </div>
 

@@ -5,6 +5,9 @@ const trim = (v) => (typeof v === "string" ? v.trim() : v);
 const requiredTrimmedString = (msg) =>
   z.preprocess(trim, z.string().min(1, msg));
 
+/** Kelas tertinggi di SD. Siswa di kelas ini diluluskan, bukan dinaikkan. */
+export const FINAL_GRADE = 6;
+
 export const TeacherItemSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -45,7 +48,7 @@ export const TeacherCreateSchema = z
     grade: z.coerce
       .number()
       .min(1, "Grade minimal 1.")
-      .max(6, "Grade maksimal 6."),
+      .max(FINAL_GRADE, `Grade maksimal ${FINAL_GRADE}.`),
     password: z.preprocess(
       trim,
       z.string().min(1, "Password wajib diisi.").min(6, "Password minimal 6 karakter.")

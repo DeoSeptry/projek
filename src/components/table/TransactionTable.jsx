@@ -1,6 +1,6 @@
 // src/components/table/TransactionTable.jsx
 import React from 'react';
-import { Edit2, Trash2, CheckCircle } from 'lucide-react';
+import { Edit2, Trash2, CheckCircle, RefreshCw } from 'lucide-react';
 import SearchBar from './SearchBar';
 import BaseTable from './BaseTable';
 import { formatBalance, formatCurrency, formatDate } from '../../utils/formatters';
@@ -21,6 +21,7 @@ export default function TransactionTable({
   showActions = false,
   onEdit,
   onDelete,
+  onRefresh,
 }) {
   const getTypeColor = (type) => {
     return type === 'DEPOSIT'
@@ -137,12 +138,29 @@ export default function TransactionTable({
 
   return (
     <div className="space-y-4">
-      {showSearch && onSearchChange && (
-        <SearchBar
-          value={searchQuery}
-          onChange={onSearchChange}
-          placeholder="Cari nama siswa..."
-        />
+      {(onRefresh || (showSearch && onSearchChange)) && (
+        <div className="flex items-center gap-3">
+          {showSearch && onSearchChange && (
+            <SearchBar
+              value={searchQuery}
+              onChange={onSearchChange}
+              placeholder="Cari nama siswa..."
+              className="flex-1"
+            />
+          )}
+
+          {onRefresh && (
+            <button
+              type="button"
+              onClick={onRefresh}
+              disabled={isLoading}
+              title="Muat ulang data"
+              className="ml-auto inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <span>Refresh</span>
+            </button>
+          )}
+        </div>
       )}
 
       <BaseTable

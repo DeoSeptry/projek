@@ -70,6 +70,7 @@ export default function TransaksiWalkel() {
     isLoading,
     isError,
     isFetching,
+    refetch,
   } = useGetTransactionsQuery(apiParams);
 
   const [updateAmount, { isLoading: isUpdating }] =
@@ -292,7 +293,7 @@ export default function TransaksiWalkel() {
               <button
                 onClick={() => setDepositModal(true)}
                className="inline-flex items-center justify-center text-white bg-blue-600 border border-transparent hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 shadow-sm font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none transition-colors ">
-                + Tambah Transaksi
+                Tambah Transaksi
               </button>
             </div>
           </div>
@@ -377,6 +378,7 @@ export default function TransaksiWalkel() {
           showActions={true}
           onEdit={handleEditClick}
           onDelete={handleDeleteClick}
+          onRefresh={refetch}
         />
       </div>
 
@@ -396,7 +398,6 @@ export default function TransaksiWalkel() {
             className={`inline-flex items-center justify-center text-white bg-blue-600 border border-transparent hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 shadow-sm font-medium leading-5 rounded-lg text-sm px-4 py-2.5 focus:outline-none transition-colors gap-2
           ${isDownloading ? "opacity-70 cursor-not-allowed" : ""}`}
           >
-            <Download size={18} />
             <span>{isDownloading ? "Membuat PDF..." : "Download PDF"}</span>
           </button>
         </div>

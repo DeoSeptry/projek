@@ -40,6 +40,7 @@ export default function TransaksiKepsek() {
     isLoading,
     isError,
     isFetching,
+    refetch,
   } = useGetTransactionsQuery(apiParams);
 
   const transactions = response?.items || [];
@@ -195,6 +196,7 @@ export default function TransaksiKepsek() {
           onPageChange={handlePageChange}
           showSearch={true}
           showPagination={true}
+          onRefresh={refetch}
         />
       </div>
     </div>
