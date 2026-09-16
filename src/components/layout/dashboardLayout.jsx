@@ -133,7 +133,6 @@ export default function DashboardLayout() {
           disabled={isLoggingOut}
           className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-red-50 hover:text-red-600 hover:border-red-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          <LogOut className="w-4 h-4" />
           <span>{isLoggingOut ? "Logging out..." : "Logout"}</span>
         </button>
       </div>

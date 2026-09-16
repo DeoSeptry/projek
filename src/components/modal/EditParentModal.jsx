@@ -153,12 +153,6 @@ export default function EditParentModal({
               )}
             </div>
 
-            {/* Info */}
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-800">
-                Password tidak dapat diubah melalui form ini. Hubungi administrator untuk reset password.
-              </p>
-            </div>
 
             {/* Actions */}
             <div className="flex gap-3 pt-4">

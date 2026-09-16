@@ -1,19 +1,24 @@
 // pages/ProfilePage.jsx
 import React, { useState } from "react";
-import { Camera, Trash2, User, Phone, Lock, Mail, Check } from "lucide-react";
+import { Camera, Trash2, User, Phone, Lock, Mail } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useDeleteAvatarMutation } from "../services/api/profile.api";
+import { useLogoutMutation } from "../services/api/auth.api";
 import { useProfileForm } from "../hooks/profile/useProfileForm";
 import { useAvatarForm } from "../hooks/profile/useAvatarForm";
+import { showToast } from "../utils/toast";
+import { getApiErrorMessage } from "../utils/authError";
 
 export default function ProfilePage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
   const {
     profile,
     loadingProfile,
     saving,
     register,
+    getValues,
     formState: { errors, isValid, isDirty },
     onSubmit,
     rootErrorMessage,
@@ -28,6 +33,8 @@ export default function ProfilePage() {
   } = useAvatarForm();
 
   const [deleteAvatar, { isLoading: deleting }] = useDeleteAvatarMutation();
+  const [logout] = useLogoutMutation();
+  const navigate = useNavigate();
 
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
@@ -35,10 +42,7 @@ export default function ProfilePage() {
       setValue("avatar", file, { shouldValidate: true });
       // Auto submit setelah pilih file
       const result = await onSubmitAvatar({ avatar: file });
-      if (result?.success) {
-        setShowSuccessMessage(true);
-        setTimeout(() => setShowSuccessMessage(false), 3000);
-      }
+      if (result?.success) showToast.success("Foto profil berhasil diperbarui");
     }
   };
 
@@ -46,20 +50,36 @@ export default function ProfilePage() {
     try {
       await deleteAvatar().unwrap();
       setShowDeleteConfirm(false);
-      setShowSuccessMessage(true);
-      setTimeout(() => setShowSuccessMessage(false), 3000);
+      showToast.success("Foto profil berhasil dihapus");
     } catch (error) {
       console.error("Failed to delete avatar:", error);
+      showToast.error(getApiErrorMessage(error, "Gagal menghapus foto profil"));
     }
   };
 
-  const handleProfileSubmit = async (e) => {
-    e.preventDefault();
-    const result = await onSubmit(e);
-    if (result?.success) {
-      setShowSuccessMessage(true);
-      setTimeout(() => setShowSuccessMessage(false), 3000);
+  const doProfileSubmit = async () => {
+    setShowPasswordConfirm(false);
+    const result = await onSubmit();
+    if (!result?.success) return;
+
+    if (result.passwordChanged) {
+      // Password berubah -> sesi lama tidak valid, paksa login ulang
+      showToast.success("Password berhasil diubah. Silakan login kembali.");
+      await logout();
+      navigate("/login", { replace: true });
+      return;
     }
+
+    showToast.success("Profil berhasil diperbarui");
+  };
+
+  const handleProfileSubmit = (e) => {
+    e.preventDefault();
+    if (getValues("password")?.trim()) {
+      setShowPasswordConfirm(true);
+      return;
+    }
+    doProfileSubmit();
   };
 
   if (loadingProfile) {
@@ -79,21 +99,6 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Success Message */}
-        {showSuccessMessage && (
-          <div className="mb-6 bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3 animate-fade-in">
-            <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-              <Check className="text-white" size={20} />
-            </div>
-            <div>
-              <p className="font-medium text-green-800">Berhasil!</p>
-              <p className="text-sm text-green-700">
-                Profil Anda telah diperbarui
-              </p>
-            </div>
-          </div>
-        )}
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Avatar & Info */}
           <div className="lg:col-span-1">
@@ -420,6 +425,51 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Password Change Confirmation Modal */}
+      {showPasswordConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
+                <Lock className="text-amber-600" size={24} />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-slate-800">
+                  Ubah Password
+                </h3>
+                <p className="text-sm text-slate-600">
+                  Anda akan keluar dari sesi ini
+                </p>
+              </div>
+            </div>
+
+            <p className="text-slate-600 mb-6">
+              Setelah password diubah, Anda akan otomatis logout dan harus login
+              kembali menggunakan password baru. Lanjutkan?
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setShowPasswordConfirm(false)}
+                disabled={saving}
+                className="flex-1 px-4 py-2.5 border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium rounded-xl transition"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={doProfileSubmit}
+                disabled={saving}
+                className="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition disabled:opacity-60"
+              >
+                Ya, Ubah Password
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (

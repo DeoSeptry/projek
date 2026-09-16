@@ -1,7 +1,14 @@
 import React from 'react';
-import { User, GraduationCap, Calendar } from 'lucide-react';
+import { User, Calendar } from 'lucide-react';
+import { useGetTeacherByIdQuery } from '../../services/api/teachers.api';
 
-export default function TeacherDetailPanel({ teacher }) {
+export default function TeacherDetailPanel({ teacher: teacherFromList }) {
+  // Ambil detail terbaru dari API; data list dipakai sementara agar tidak ada layar kosong.
+  const { data: teacherDetail } = useGetTeacherByIdQuery(teacherFromList?.id, {
+    skip: !teacherFromList?.id,
+  });
+  const teacher = teacherDetail ?? teacherFromList;
+
   const formatDate = (isoString) => {
     return new Date(isoString).toLocaleDateString('id-ID', {
       day: 'numeric',
@@ -9,7 +16,7 @@ export default function TeacherDetailPanel({ teacher }) {
       year: 'numeric',
     });
   };
-  const getInitials = (name) => {
+  const getInitials = (name = '') => {
     return name
       .split(' ')
       .map((n) => n[0])
@@ -63,37 +70,20 @@ export default function TeacherDetailPanel({ teacher }) {
             </label>
 
             <div className='flex flex-col gap-3'>
-              <div className='flex justify-between border-b border-gray-200'>
-             <p className=" text-left text-[#718EBF] ">
-            {teacher.name}
-            </p>
-            <p className=' text-left text-[#718EBF]'>{teacher.name}</p> 
-            </div>
-            <p className=" text-left mb-2 pb-2 border-b border-gray-200 text-[#718EBF]">
-                {teacher.username}
-            </p>
-            </div>
-          </div>
-{/* 
-          <div>
-            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-              Tanggal Bergabung
-            </label>
-            <div className="mt-1.5 flex items-center gap-2 text-sm text-gray-700">
-              <Calendar className="w-4 h-4 text-gray-400" />
-              {formatDate(teacher.createdAt)}
+              <div className='flex justify-between border-b border-gray-200 pb-2'>
+                <span className='text-left text-gray-500'>Nama</span>
+                <span className='text-left text-[#718EBF]'>{teacher.name}</span>
+              </div>
+              <div className='flex justify-between border-b border-gray-200 pb-2'>
+                <span className='text-left text-gray-500'>Username</span>
+                <span className='text-left text-[#718EBF]'>{teacher.username}</span>
+              </div>
+              <div className='flex justify-between border-b border-gray-200 pb-2'>
+                <span className='text-left text-gray-500'>Kelas</span>
+                <span className='text-left text-[#718EBF]'>{teacher.grade ?? '-'}</span>
+              </div>
             </div>
           </div>
-
-          <div>
-            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-              Terakhir Diupdate
-            </label>
-            <div className="mt-1.5 flex items-center gap-2 text-sm text-gray-700">
-              <Calendar className="w-4 h-4 text-gray-400" />
-              {formatDate(teacher.updatedAt)}
-            </div>
-          </div> */}
         </div>
       </div>
     </div>

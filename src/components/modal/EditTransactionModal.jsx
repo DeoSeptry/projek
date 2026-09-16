@@ -1,7 +1,8 @@
 // src/components/TransactionTable/modals/EditTransactionModal.jsx
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Pencil } from 'lucide-react';
 import { formatCurrency } from '../../utils/formatters';
+import { TransactionUpdateAmountSchema } from '../../schemas/transactions/transactions.schema';
 
 
 export default function EditTransactionModal({
@@ -25,19 +26,13 @@ export default function EditTransactionModal({
     e.preventDefault();
     setError('');
 
-    const numAmount = Number(amount);
-
-    if (!amount || isNaN(numAmount)) {
-      setError('Nominal harus berupa angka');
+    const parsed = TransactionUpdateAmountSchema.safeParse({ amount });
+    if (!parsed.success) {
+      setError(parsed.error.issues[0].message);
       return;
     }
 
-    if (numAmount <= 0) {
-      setError('Nominal harus lebih besar dari 0');
-      return;
-    }
-
-    onSubmit({ transactionId: transaction.id, amount: numAmount });
+    onSubmit({ transactionId: transaction.id, amount: parsed.data.amount });
   };
 
   const handleAmountChange = (e) => {
@@ -58,23 +53,34 @@ export default function EditTransactionModal({
 
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6 transform transition-all">
+        <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full transform transition-all">
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-semibold text-gray-900">
-              Edit Data Transaksi
-            </h3>
+          <div className="flex items-center justify-between p-6 border-b border-gray-200">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <Pencil className="w-6 h-6 text-blue-600" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">
+                  Edit Data Transaksi
+                </h2>
+                <p className="text-sm text-gray-500 mt-0.5">
+                  Ubah nominal transaksi siswa
+                </p>
+              </div>
+            </div>
             <button
+              type="button"
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition"
               disabled={isLoading}
+              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5" />
             </button>
           </div>
 
           {/* Student Info */}
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+          <div className="mt-6 mx-6 mb-6 p-4 bg-gray-50 rounded-lg">
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600">Nama Siswa:</span>
@@ -106,7 +112,7 @@ export default function EditTransactionModal({
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} className="px-6 pb-6">
             <div className="mb-6">
               <label
                 htmlFor="amount"
@@ -132,11 +138,6 @@ export default function EditTransactionModal({
               </div>
               {error && (
                 <p className="mt-2 text-sm text-red-600">{error}</p>
-              )}
-              {amount && !error && (
-                <p className="mt-2 text-sm text-gray-600">
-                  Preview: {formatCurrency(Number(amount))}
-                </p>
               )}
             </div>
 

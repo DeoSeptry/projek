@@ -40,7 +40,6 @@ export default function AkunKepsek() {
               onClick={() => setShowCreateModal(true)}
               className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition-colors shadow-sm"
             >
-              <UserPlus className="w-4 h-4" />
               <span>Tambah Wali Kelas</span>
             </button>
           </div>
