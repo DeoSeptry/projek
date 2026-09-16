@@ -57,7 +57,6 @@ export default function DayRangeFilter({ value = "", onChange }) {
         aria-haspopup="true"
         aria-expanded={isOpen}
       >
-        <Calendar className="w-4 h-4 mr-2" />
         <span>{selectedLabel}</span>
         <ChevronDown
           className={`w-4 h-4 ms-1.5 -me-0.5 transition-transform duration-200 ${

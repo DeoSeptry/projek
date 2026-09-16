@@ -85,7 +85,7 @@ export function useProfileForm() {
         // You can add toast notification here
         console.log("Profile updated successfully:", response);
 
-        return { success: true, data: response };
+        return { success: true, data: response, passwordChanged: !!changedFields.password };
       } catch (err) {
         const errorMessage = getApiErrorMessage(err, "Gagal update profil");
         setError("root", {
@@ -98,7 +98,17 @@ export function useProfileForm() {
     [saving, updateProfile, profile, setError, form]
   );
 
-  const onSubmit = handleSubmit(submitLogic);
+  // handleSubmit() selalu resolve undefined, jadi hasilnya ditangkap lewat closure
+  const onSubmit = useCallback(
+    async (e) => {
+      let result;
+      await handleSubmit(async (values) => {
+        result = await submitLogic(values);
+      })(e);
+      return result;
+    },
+    [handleSubmit, submitLogic]
+  );
 
   const rootErrorMessage = errors?.root?.message || 
     (apiError ? getApiErrorMessage(apiError) : "");

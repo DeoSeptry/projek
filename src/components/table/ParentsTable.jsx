@@ -72,7 +72,7 @@ export default function ParentsTable({
         <SearchBar
           value={searchQuery}
           onChange={onSearchChange}
-          placeholder="Cari nama siswa, orang tua, atau NISN..."
+          placeholder="Cari nama orang tua"
         />
       )}
 

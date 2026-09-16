@@ -3,6 +3,13 @@ import { z } from "zod";
 const trim = (v) => (typeof v === "string" ? v.trim() : v);
 const requiredTrimmed = (msg) => z.preprocess(trim, z.string().min(1, msg));
 
+export const MIN_AMOUNT = 1000;
+export const MIN_AMOUNT_MESSAGE = "Nominal minimal Rp 1.000";
+const amountField = () =>
+  z.coerce
+    .number({ error: "Nominal wajib diisi berupa angka" })
+    .min(MIN_AMOUNT, MIN_AMOUNT_MESSAGE);
+
 /** Item transaksi (sesuaikan jika ada field lain) */
 export const TransactionItemSchema = z.object({
   id: z.string(),
@@ -86,16 +93,16 @@ export const TransactionsChartResponseSchema = z.object({
 
 /** Payloads */
 export const TransactionUpdateAmountSchema = z.object({
-  amount: z.coerce.number().positive("Amount harus > 0"),
+  amount: amountField(),
 });
 
 export const TransactionDepositSchema = z.object({
   studentId: requiredTrimmed("studentId wajib diisi."),
-  amount: z.coerce.number().positive("Amount harus > 0"),
+  amount: amountField(),
 });
 
 export const TransactionWithdrawSchema = z.object({
-  amount: z.coerce.number().positive("Amount harus > 0"),
+  amount: amountField(),
   reason: requiredTrimmed("Alasan wajib diisi."),
 });
 
