@@ -6,7 +6,7 @@ const trim = (v) => (typeof v === "string" ? v.trim() : v);
 const requiredTrimmed = (msg) => z.preprocess(trim, z.string().min(1, msg));
 
 // Helper untuk password dengan trim dan min length
-const passwordTrimmed = (msg, minLength = 6) => 
+const passwordTrimmed = (msg, minLength = 8) =>
   z.preprocess(trim, z.string().min(1, msg).min(minLength, `Password minimal ${minLength} karakter.`));
 
 // Helper untuk NISN dengan validasi pattern
@@ -86,7 +86,7 @@ export const ParentCreateSchema = z
     parentName: requiredTrimmed("Nama orang tua wajib diisi."),
     username: requiredTrimmed("Username wajib diisi."),
     phoneNumber: phoneNumberValidation(),
-    password: passwordTrimmed("Password wajib diisi.", 6),
+    password: passwordTrimmed("Password wajib diisi.", 8),
     confirmPassword: requiredTrimmed("Konfirmasi password wajib diisi."),
   })
   .refine((v) => v.password === v.confirmPassword, {

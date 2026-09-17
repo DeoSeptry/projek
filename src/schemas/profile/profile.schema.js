@@ -62,8 +62,8 @@ export const ProfileUpdateSchema = z
     username: optionalString,
     phoneNumber: optionalString,
     password: optionalStringWithMin(
-      6,
-      "Password minimal 6 karakter jika diisi"
+      8,
+      "Password minimal 8 karakter jika diisi"
     ),
     confirmPassword: optionalString,
   })

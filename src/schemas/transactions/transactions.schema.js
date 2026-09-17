@@ -40,11 +40,25 @@ export const TransactionsListResponseSchema = z.object({
     .optional(),
 });
 
+/**
+ * Detail transaksi (GET /transactions/:id).
+ * Field-nya beda dengan item list: pakai `withdrawalReason`, tanpa grade/balance.
+ */
+export const TransactionDetailSchema = z.object({
+  id: z.string(),
+  name: z.string().optional().default(""),
+  amount: z.union([z.string(), z.number()]),
+  type: z.string(),
+  date: z.string(),
+  status: z.string(),
+  withdrawalReason: z.string().nullable().optional(), // Khusus withdrawal
+});
+
 export const TransactionDetailResponseSchema = z.object({
   status: z.boolean(),
   code: z.coerce.number(),
   message: z.string(),
-  data: TransactionItemSchema,
+  data: TransactionDetailSchema,
 });
 
 export const TransactionTotalAmountsResponseSchema = z.object({
