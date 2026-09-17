@@ -51,7 +51,7 @@ export const TeacherCreateSchema = z
       .max(FINAL_GRADE, `Grade maksimal ${FINAL_GRADE}.`),
     password: z.preprocess(
       trim,
-      z.string().min(1, "Password wajib diisi.").min(6, "Password minimal 6 karakter.")
+      z.string().min(1, "Password wajib diisi.").min(8, "Password minimal 8 karakter.")
     ),
     confirmPassword: z.preprocess(
       trim,

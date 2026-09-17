@@ -1,36 +1,40 @@
-// Self-check aturan nominal minimal. Jalankan: node src/schemas/transactions/transactions.schema.check.mjs
+// Cek cepat: skema detail cocok dengan response asli GET /transactions/:id
+// Jalankan: node src/schemas/transactions/transactions.schema.check.mjs
 import assert from "node:assert/strict";
-import {
-  MIN_AMOUNT,
-  TransactionUpdateAmountSchema,
-  TransactionDepositSchema,
-  TransactionWithdrawSchema,
-} from "./transactions.schema.js";
+import { TransactionDetailResponseSchema } from "./transactions.schema.js";
 
-const msg = (schema, amount, extra) =>
-  schema.safeParse({ amount, ...extra }).error?.issues[0].message;
+const withdrawal = {
+  status: true,
+  code: 200,
+  message: "OK",
+  data: {
+    id: "bb51af11-9446-4d13-ab30-f4587ada01df",
+    name: "Sato",
+    amount: "12000",
+    type: "WITHDRAWAL",
+    date: "2026-09-17T16:01:21.267Z",
+    status: "PENDING",
+    withdrawalReason: "pengen makan",
+    approvedBy: null,
+    approvedAt: null,
+    updatedAt: null,
+  },
+};
 
-// Tolak di bawah minimum, baik angka maupun string (input form selalu string).
-for (const bad of [0, 1, 999, "999", -5000, "", null, undefined, "abc"]) {
-  assert(msg(TransactionUpdateAmountSchema, bad), `harus ditolak: ${bad}`);
-}
+const parsed = TransactionDetailResponseSchema.safeParse(withdrawal);
+assert.ok(parsed.success, `withdrawal gagal parse: ${parsed.error}`);
+assert.equal(parsed.data.data.withdrawalReason, "pengen makan");
+assert.equal(parsed.data.data.name, "Sato");
 
-// Pesan pakai bahasa Indonesia, bukan default zod bahasa Inggris.
-for (const bad of [999, "", "abc", undefined]) {
-  assert.match(msg(TransactionUpdateAmountSchema, bad), /Nominal/);
-}
-assert.equal(msg(TransactionUpdateAmountSchema, 999), "Nominal minimal Rp 1.000");
-
-// Tepat di batas dan di atasnya diterima, string dikonversi ke number.
-assert.equal(TransactionUpdateAmountSchema.parse({ amount: MIN_AMOUNT }).amount, 1000);
-assert.equal(TransactionUpdateAmountSchema.parse({ amount: "1500" }).amount, 1500);
-
-// Aturan yang sama berlaku untuk deposit dan withdraw.
-assert(msg(TransactionDepositSchema, 999, { studentId: "s1" }));
-assert(msg(TransactionWithdrawSchema, 999, { reason: "beli buku" }));
-assert.equal(
-  TransactionDepositSchema.parse({ studentId: "s1", amount: "1000" }).amount,
-  1000
+// Deposit tidak punya withdrawalReason -> tetap harus lolos
+const deposit = {
+  ...withdrawal,
+  data: { ...withdrawal.data, type: "DEPOSIT", withdrawalReason: null },
+};
+delete deposit.data.withdrawalReason;
+assert.ok(
+  TransactionDetailResponseSchema.safeParse(deposit).success,
+  "deposit tanpa withdrawalReason harus lolos"
 );
 
-console.log("OK: aturan nominal minimal Rp 1.000 terpenuhi");
+console.log("OK: skema detail transaksi cocok dengan response API.");

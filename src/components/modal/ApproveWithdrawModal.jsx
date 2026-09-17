@@ -3,8 +3,10 @@ import React from 'react';
 import { X, AlertCircle, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '../../utils/formatters';
-import { useGetTransactionWhatsappReceiptMutation } from '../../services/api/transactions.api';
-import WhatsappPromptModal from './WhatsappPromptModal';
+import {
+  useGetTransactionByIdQuery,
+  useGetTransactionWhatsappReceiptMutation,
+} from '../../services/api/transactions.api';
 import WhatsappSuccessModal from './WhatsappSuccessModal';
 
 export default function ApproveWithdrawModal({
@@ -14,27 +16,31 @@ export default function ApproveWithdrawModal({
   onConfirm,
   isLoading,
 }) {
-  const [isWhatsappPromptOpen, setIsWhatsappPromptOpen] = React.useState(false);
   const [isWhatsappSuccessOpen, setIsWhatsappSuccessOpen] = React.useState(false);
   const [getWhatsappReceipt, { isLoading: isWhatsappLoading }] =
     useGetTransactionWhatsappReceiptMutation();
 
+  // Data tampilan diambil dari detail transaksi, bukan dari item list.
+  const transactionId = transaction?.id;
+  const {
+    data: detail,
+    isLoading: isLoadingDetail,
+    isError: isDetailError,
+  } = useGetTransactionByIdQuery(transactionId, {
+    skip: !isOpen || !transactionId,
+  });
+
   const handleApprove = async () => {
-    if (!transaction?.id || isLoading) return;
-    const result = await onConfirm(transaction.id);
+    if (!transactionId || isLoading) return;
+    const result = await onConfirm(transactionId);
     if (result === false) return;
-    setIsWhatsappPromptOpen(true);
+    await sendWhatsapp();
   };
 
-  const handleWhatsappDecision = async (shouldSend) => {
-    if (!shouldSend) {
-      setIsWhatsappPromptOpen(false);
-      onClose();
-      return;
-    }
-
+  // Langsung kirim ke WhatsApp setelah approve berhasil, tanpa konfirmasi.
+  async function sendWhatsapp() {
     try {
-      const res = await getWhatsappReceipt(transaction.id).unwrap();
+      const res = await getWhatsappReceipt(transactionId).unwrap();
       const link =
         res?.data?.whatsappLink ||
         res?.data?.whatsappUrl ||
@@ -42,8 +48,10 @@ export default function ApproveWithdrawModal({
         res?.whatsappUrl ||
         '';
       if (link) {
-        window.open(link, '_blank', 'noopener,noreferrer');
-        setIsWhatsappPromptOpen(false);
+        // ponytail: popup blocker bisa menahan window.open karena dipanggil setelah await.
+        // Kalau itu terjadi, arahkan tab saat ini ke link WhatsApp sebagai fallback.
+        const opened = window.open(link, '_blank', 'noopener,noreferrer');
+        if (!opened) window.location.href = link;
         setIsWhatsappSuccessOpen(true);
       } else {
         toast.error('Link WhatsApp tidak tersedia.');
@@ -54,16 +62,13 @@ export default function ApproveWithdrawModal({
       toast.error('Gagal membuat link WhatsApp.');
       onClose();
     }
-  };
+  }
 
   React.useEffect(() => {
-    if (!isOpen) {
-      setIsWhatsappPromptOpen(false);
-      setIsWhatsappSuccessOpen(false);
-    }
+    if (!isOpen) setIsWhatsappSuccessOpen(false);
   }, [isOpen]);
 
-  if (!isOpen || !transaction) return null;
+  if (!isOpen || !transactionId) return null;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -98,51 +103,53 @@ export default function ApproveWithdrawModal({
           </div>
 
           {/* Transaction Info */}
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg space-y-3">
-            <div className="flex justify-between">
-              <span className="text-sm text-gray-600">Nama Siswa:</span>
-              <span className="text-sm font-medium text-gray-900">
-                {transaction.name}
-              </span>
+          {isLoadingDetail ? (
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg text-sm text-gray-600 text-center">
+              Memuat detail transaksi...
             </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-gray-600">Kelas:</span>
-              <span className="text-sm font-medium text-gray-900">
-                {transaction.grade}
-              </span>
+          ) : isDetailError || !detail ? (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
+              Gagal memuat detail transaksi.
             </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-gray-600">Nominal Penarikan:</span>
-              <span className="text-sm font-semibold text-red-600">
-                {formatCurrency(transaction.amount)}
-              </span>
-            </div>
-            {transaction.reason && (
-              <div className="pt-2 border-t border-gray-200">
-                <span className="text-sm text-gray-600">Alasan:</span>
-                <p className="text-sm font-medium text-gray-900 mt-1">
-                  {transaction.reason}
-                </p>
+          ) : (
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg space-y-3">
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">Nama Siswa:</span>
+                <span className="text-sm font-medium text-gray-900">
+                  {detail.name}
+                </span>
               </div>
-            )}
-            <div className="flex justify-between items-center pt-2 border-t border-gray-200">
-              <span className="text-sm text-gray-600">Status:</span>
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium">
-                <span className="w-1.5 h-1.5 bg-amber-600 rounded-full animate-pulse"></span>
-                Menunggu Approval
-              </span>
-            </div>
-          </div>
-
-          {/* Confirmation Message */}
-          {!isWhatsappPromptOpen && (
-            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-800">
-                <CheckCircle className="w-4 h-4 inline mr-1" />
-                Dengan menyetujui, transaksi penarikan ini akan diproses dan saldo siswa akan berkurang.
-              </p>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">Nominal Penarikan:</span>
+                <span className="text-sm font-semibold text-red-600">
+                  {formatCurrency(detail.amount)}
+                </span>
+              </div>
+              {detail.withdrawalReason && (
+                <div className="pt-2 border-t border-gray-200">
+                  <span className="text-sm text-gray-600">Alasan:</span>
+                  <p className="text-sm font-medium text-gray-900 mt-1">
+                    {detail.withdrawalReason}
+                  </p>
+                </div>
+              )}
+              <div className="flex justify-between items-center pt-2 border-t border-gray-200">
+                <span className="text-sm text-gray-600">Status:</span>
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium">
+                  <span className="w-1.5 h-1.5 bg-amber-600 rounded-full animate-pulse"></span>
+                  Menunggu Approval
+                </span>
+              </div>
             </div>
           )}
+
+          {/* Confirmation Message */}
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-800">
+              <CheckCircle className="w-4 h-4 inline mr-1" />
+              Dengan menyetujui, transaksi penarikan ini akan diproses, saldo siswa akan berkurang, dan informasi transaksi otomatis dikirim ke WhatsApp.
+            </p>
+          </div>
 
           {/* Actions */}
           <div className="flex gap-3">
@@ -158,7 +165,7 @@ export default function ApproveWithdrawModal({
               type="button"
               onClick={handleApprove}
               className="flex-1 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition disabled:bg-green-400 disabled:cursor-not-allowed"
-              disabled={isLoading || isWhatsappLoading}
+              disabled={isLoading || isWhatsappLoading || isLoadingDetail || isDetailError || !detail}
             >
               {isLoading || isWhatsappLoading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -172,18 +179,6 @@ export default function ApproveWithdrawModal({
           </div>
         </div>
       </div>
-
-      <WhatsappPromptModal
-        isOpen={isWhatsappPromptOpen}
-        title="Kirim Informasi ke WhatsApp"
-        message="Apakah Anda ingin mengirimkan informasi transaksi ke WhatsApp?"
-        helperText="Sistem akan membuat tautan WhatsApp dengan pesan otomatis."
-        confirmText="Ya, Kirim WhatsApp"
-        cancelText="Tidak"
-        onConfirm={() => handleWhatsappDecision(true)}
-        onCancel={() => handleWhatsappDecision(false)}
-        isLoading={isWhatsappLoading}
-      />
 
       <WhatsappSuccessModal
         isOpen={isWhatsappSuccessOpen}

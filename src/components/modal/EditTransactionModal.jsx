@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Pencil } from 'lucide-react';
 import { formatCurrency } from '../../utils/formatters';
 import { TransactionUpdateAmountSchema } from '../../schemas/transactions/transactions.schema';
+import { useGetTransactionByIdQuery } from '../../services/api/transactions.api';
 
 
 export default function EditTransactionModal({
@@ -15,12 +16,22 @@ export default function EditTransactionModal({
   const [amount, setAmount] = useState('');
   const [error, setError] = useState('');
 
+  // Data tampilan diambil dari detail transaksi, bukan dari item list.
+  const transactionId = transaction?.id;
+  const {
+    data: detail,
+    isLoading: isLoadingDetail,
+    isError: isDetailError,
+  } = useGetTransactionByIdQuery(transactionId, {
+    skip: !isOpen || !transactionId,
+  });
+
   useEffect(() => {
-    if (transaction) {
-      setAmount(transaction.amount.toString());
+    if (detail) {
+      setAmount(String(detail.amount));
       setError('');
     }
-  }, [transaction]);
+  }, [detail]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -32,7 +43,7 @@ export default function EditTransactionModal({
       return;
     }
 
-    onSubmit({ transactionId: transaction.id, amount: parsed.data.amount });
+    onSubmit({ transactionId, amount: parsed.data.amount });
   };
 
   const handleAmountChange = (e) => {
@@ -41,7 +52,7 @@ export default function EditTransactionModal({
     setError('');
   };
 
-  if (!isOpen || !transaction) return null;
+  if (!isOpen || !transactionId) return null;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -80,36 +91,40 @@ export default function EditTransactionModal({
           </div>
 
           {/* Student Info */}
-          <div className="mt-6 mx-6 mb-6 p-4 bg-gray-50 rounded-lg">
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Nama Siswa:</span>
-                <span className="text-sm font-medium text-gray-900">
-                  {transaction.name}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Kelas:</span>
-                <span className="text-sm font-medium text-gray-900">
-                  {transaction.grade}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Nominal Saat Ini:</span>
-                <span className="text-sm font-semibold text-blue-600">
-                  {formatCurrency(transaction.amount)}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Tipe:</span>
-                <span className={`text-sm font-medium ${
-                  transaction.type === 'DEPOSIT' ? 'text-green-600' : 'text-red-600'
-                }`}>
-                  {transaction.type === 'DEPOSIT' ? 'Setoran' : 'Penarikan'}
-                </span>
+          {isLoadingDetail ? (
+            <div className="mt-6 mx-6 mb-6 p-4 bg-gray-50 rounded-lg text-sm text-gray-600 text-center">
+              Memuat detail transaksi...
+            </div>
+          ) : isDetailError || !detail ? (
+            <div className="mt-6 mx-6 mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
+              Gagal memuat detail transaksi.
+            </div>
+          ) : (
+            <div className="mt-6 mx-6 mb-6 p-4 bg-gray-50 rounded-lg">
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Nama Siswa:</span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {detail.name}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Nominal Saat Ini:</span>
+                  <span className="text-sm font-semibold text-blue-600">
+                    {formatCurrency(detail.amount)}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Tipe:</span>
+                  <span className={`text-sm font-medium ${
+                    detail.type === 'DEPOSIT' ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {detail.type === 'DEPOSIT' ? 'Setoran' : 'Penarikan'}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="px-6 pb-6">
@@ -133,7 +148,7 @@ export default function EditTransactionModal({
                   className={`w-full pl-12 text-black pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                     error ? 'border-red-500' : 'border-gray-300'
                   }`}
-                  disabled={isLoading}
+                  disabled={isLoading || isLoadingDetail || !detail}
                 />
               </div>
               {error && (
@@ -154,7 +169,7 @@ export default function EditTransactionModal({
               <button
                 type="submit"
                 className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition disabled:bg-blue-400 disabled:cursor-not-allowed"
-                disabled={isLoading}
+                disabled={isLoading || isLoadingDetail || isDetailError || !detail}
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-2">

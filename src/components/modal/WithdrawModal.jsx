@@ -4,7 +4,6 @@ import { X, AlertCircle, Wallet } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useWithdrawForm } from '../../hooks/transactions/useWithdrawForm';
 import { useGetTransactionTotalAmountsQuery, useGetTransactionWhatsappWithdrawalRequestMutation } from '../../services/api/transactions.api';
-import WhatsappPromptModal from './WhatsappPromptModal';
 import WhatsappSuccessModal from './WhatsappSuccessModal';
 
 function formatIDR(value) {
@@ -21,8 +20,6 @@ export default function WithdrawModal({
   onClose,
   onSuccess,
 }) {
-  const [isWhatsappPromptOpen, setIsWhatsappPromptOpen] = React.useState(false);
-  const [lastTransactionId, setLastTransactionId] = React.useState(null);
   const [isWhatsappSuccessOpen, setIsWhatsappSuccessOpen] = React.useState(false);
 
   // Fetch saldo dari API yang sama dengan ArusKeuangan
@@ -41,14 +38,13 @@ export default function WithdrawModal({
     isLoading, 
     rootErrorMessage 
   } = useWithdrawForm({
-    onSuccess: (res) => { 
+    onSuccess: (res) => {
       // Toast sukses
        toast.success("Pengajuan Penarikan Berhasil!", {
         duration: 3000,
       });
       const transactionId = res?.data?.id || res?.data?.transactionId || null;
-      setLastTransactionId(transactionId);
-      setIsWhatsappPromptOpen(true);
+      sendWhatsapp(transactionId);
       onSuccess?.(res);
     },
     onError: (error) => {
@@ -76,22 +72,16 @@ export default function WithdrawModal({
     }
   };
 
-  const handleWhatsappDecision = async (shouldSend) => {
-    if (!shouldSend) {
-      setIsWhatsappPromptOpen(false);
-      onClose();
-      return;
-    }
-
-    if (!lastTransactionId) {
+  // Langsung kirim ke WhatsApp setelah pengajuan berhasil, tanpa konfirmasi.
+  async function sendWhatsapp(transactionId) {
+    if (!transactionId) {
       toast.error('Transaction ID tidak ditemukan.');
-      setIsWhatsappPromptOpen(false);
       onClose();
       return;
     }
 
     try {
-      const res = await getWhatsappWithdrawal(lastTransactionId).unwrap();
+      const res = await getWhatsappWithdrawal(transactionId).unwrap();
       const link =
         res?.data?.whatsappLink ||
         res?.data?.whatsappUrl ||
@@ -99,8 +89,10 @@ export default function WithdrawModal({
         res?.whatsappUrl ||
         '';
       if (link) {
-        window.open(link, '_blank', 'noopener,noreferrer');
-        setIsWhatsappPromptOpen(false);
+        // ponytail: popup blocker bisa menahan window.open karena dipanggil setelah await.
+        // Kalau itu terjadi, arahkan tab saat ini ke link WhatsApp sebagai fallback.
+        const opened = window.open(link, '_blank', 'noopener,noreferrer');
+        if (!opened) window.location.href = link;
         setIsWhatsappSuccessOpen(true);
       } else {
         toast.error('Link WhatsApp tidak tersedia.');
@@ -111,14 +103,10 @@ export default function WithdrawModal({
       toast.error('Gagal membuat link WhatsApp.');
       onClose();
     }
-  };
+  }
 
   React.useEffect(() => {
-    if (!isOpen) {
-      setIsWhatsappPromptOpen(false);
-      setLastTransactionId(null);
-      setIsWhatsappSuccessOpen(false);
-    }
+    if (!isOpen) setIsWhatsappSuccessOpen(false);
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -181,8 +169,6 @@ export default function WithdrawModal({
 
           {/* Form */}
           <form onSubmit={onSubmit} className="space-y-4">
-            {!isWhatsappPromptOpen && (
-              <>
             {/* Amount */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -226,9 +212,6 @@ export default function WithdrawModal({
               )}
             </div>
 
-              </>
-            )}
-
             {/* Actions */}
             <div className="flex gap-3 pt-2">
               <button
@@ -257,18 +240,6 @@ export default function WithdrawModal({
           </form>
         </div>
       </div>
-
-      <WhatsappPromptModal
-        isOpen={isWhatsappPromptOpen}
-        title="Kirim Informasi ke WhatsApp"
-        message="Apakah Anda ingin mengirimkan informasi transaksi ke WhatsApp?"
-        helperText="Sistem akan membuat tautan WhatsApp dengan pesan otomatis."
-        confirmText="Ya, Kirim WhatsApp"
-        cancelText="Tidak"
-        onConfirm={() => handleWhatsappDecision(true)}
-        onCancel={() => handleWhatsappDecision(false)}
-        isLoading={isWhatsappLoading}
-      />
 
       <WhatsappSuccessModal
         isOpen={isWhatsappSuccessOpen}

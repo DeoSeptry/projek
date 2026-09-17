@@ -7,10 +7,6 @@ const trimRequired = (msg) =>
 
 export const LoginSchema = z.object({
   username: trimRequired("Username wajib diisi."),
-  password: z.preprocess(
-    trim,
-    z.string()
-      .min(1, "Password wajib diisi.")
-      .min(6, "Password minimal 6 karakter.")
-  ),
+  // Login hanya cek non-empty — panjang minimum divalidasi saat create/update password.
+  password: trimRequired("Password wajib diisi."),
 });

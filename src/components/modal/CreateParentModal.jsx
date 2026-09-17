@@ -207,7 +207,7 @@ export default function CreateParentModal({
                   className={`w-full px-4 py-3 pr-10 text-black border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                     errors.password ? 'border-red-500' : 'border-gray-300'
                   }`}
-                  placeholder="Minimal 6 karakter"
+                  placeholder="Minimal 8 karakter"
                   disabled={isLoading}
                 />
                 <button

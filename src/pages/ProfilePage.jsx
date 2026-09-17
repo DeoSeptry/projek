@@ -354,7 +354,7 @@ export default function ProfilePage() {
                     <input
                       id="password"
                       type="password"
-                      placeholder="Minimal 6 karakter"
+                      placeholder="Minimal 8 karakter"
                       className={`w-full text-black  pl-10 pr-4 py-3 border ${
                         errors.password
                           ? "border-red-400 focus:border-red-500"
